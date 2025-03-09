@@ -1,41 +1,53 @@
 {
-  "expo": {
-    "name": "vegify",
-    "slug": "vegify",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
-  }
+	"expo": {
+		"name": "Vegify",
+		"slug": "vegify",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"scheme": "myapp",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.jaakkonakaza.vegify",
+			"appleTeamId": "ZC29S92PKQ",
+			"statusBarStyle": "automatic",
+			"icon": {
+				"dark": "./assets/images/ios-dark.png",
+				"light": "./assets/images/ios-light.png",
+				"tinted": "./assets/images/ios-tinted.png"
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/adaptive-icon.png",
+				"backgroundColor": "#4CAF50"
+			}
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/images/favicon.png"
+		},
+		"plugins": [
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/images/splash-icon.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#4CAF50"
+				}
+			],
+			"expo-font",
+			"expo-web-browser"
+		],
+		"experiments": {
+			"typedRoutes": true,
+			"reactCompiler": true
+		},
+		"primaryColor": "#4CAF50"
+	}
 }
