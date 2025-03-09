@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
 	StyleSheet,
 	View,
-	TouchableOpacity,
 	ScrollView,
 	Switch,
 	TextInput,
+	Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -181,6 +181,16 @@ export default function ProfileScreen() {
 							The ultimate plant-based recipe app
 						</ThemedText>
 					</View>
+
+					<Image
+						source={require("@/assets/images/plantpower.png")}
+						style={{
+							height: 30,
+							width: 100,
+							alignSelf: "center",
+							marginTop: 400,
+						}}
+					/>
 				</ScrollView>
 			</ThemedView>
 		</SafeAreaView>

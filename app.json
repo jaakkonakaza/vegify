@@ -22,8 +22,10 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#4CAF50"
-			}
+				"monochromeImage": "./assets/images/adaptive-icon-monochrome.png",
+				"backgroundColor": "#B4D99D"
+			},
+			"package": "com.jaakkonakaza.vegify"
 		},
 		"web": {
 			"bundler": "metro",
