@@ -28,40 +28,66 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 	const [filters, setFilters] = useState<FilterOptions>({});
 	const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-	// Initialize filters with user's allergies
+	// Initialize filters with user's allergies and vegan preference
 	useEffect(() => {
+		const newFilters: FilterOptions = {};
+
+		// Add allergies if any
 		if (preferences.allergies.length > 0) {
-			setFilters((prevFilters) => ({
-				...prevFilters,
-				allergens: [...preferences.allergies],
-			}));
+			newFilters.allergens = [...preferences.allergies];
 		}
-	}, [preferences.allergies]);
+
+		// Add vegan preference if user is vegan
+		if (preferences.isVegan) {
+			newFilters.dietary = {
+				...newFilters.dietary,
+				vegan: true,
+			};
+		}
+
+		setFilters(newFilters);
+	}, [preferences.allergies, preferences.isVegan]);
 
 	// Function to sync allergies from user preferences to filters
 	const syncAllergies = useCallback(() => {
-		setFilters((prevFilters) => ({
-			...prevFilters,
-			allergens:
-				preferences.allergies.length > 0
-					? [...preferences.allergies]
-					: undefined,
-		}));
+		setFilters((prevFilters) => {
+			const newFilters = { ...prevFilters };
+
+			// Update allergens
+			if (preferences.allergies.length > 0) {
+				newFilters.allergens = [...preferences.allergies];
+			} else {
+				// Instead of using delete, set to undefined
+				newFilters.allergens = undefined;
+			}
+
+			return newFilters;
+		});
 	}, [preferences.allergies]);
 
-	// Modified clear filters to preserve user allergies
+	// Modified clear filters to preserve user allergies and vegan preference
 	const clearFilters = useCallback(() => {
 		setSearchQuery("");
-		// Keep only the allergens from user preferences
-		setFilters(
-			preferences.allergies.length > 0
-				? {
-						allergens: [...preferences.allergies],
-					}
-				: {},
-		);
+
+		// Create new filters object
+		const newFilters: FilterOptions = {};
+
+		// Keep allergies from user preferences
+		if (preferences.allergies.length > 0) {
+			newFilters.allergens = [...preferences.allergies];
+		}
+
+		// Keep vegan preference if user is vegan
+		if (preferences.isVegan) {
+			newFilters.dietary = {
+				...newFilters.dietary,
+				vegan: true,
+			};
+		}
+
+		setFilters(newFilters);
 		setShowFavoritesOnly(false);
-	}, [preferences.allergies]);
+	}, [preferences.allergies, preferences.isVegan]);
 
 	return (
 		<FilterContext.Provider

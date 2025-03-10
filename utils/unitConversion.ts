@@ -83,10 +83,39 @@ export function convertUnit(
 	ingredient?: string,
 ): { quantity: string; unit: string } {
 	// Parse the quantity to a number
-	const numericQuantity =
-		typeof quantity === "string"
-			? Number.parseFloat(quantity.replace(/[^\d.]/g, ""))
-			: quantity;
+	let numericQuantity: number;
+
+	if (typeof quantity === "string") {
+		// Check if it's a simple fraction like "1/2"
+		const fractionMatch = quantity.match(/^(\d+)\/(\d+)$/);
+		if (fractionMatch) {
+			const [_, numerator, denominator] = fractionMatch;
+			numericQuantity =
+				Number.parseInt(numerator) / Number.parseInt(denominator);
+		}
+		// Check if it's a mixed number like "1 1/2"
+		else if (quantity.includes("/")) {
+			const parts = quantity.trim().split(/\s+/);
+			let total = 0;
+
+			for (const part of parts) {
+				if (part.includes("/")) {
+					const [numerator, denominator] = part.split("/").map(Number);
+					total += numerator / denominator;
+				} else {
+					total += Number.parseFloat(part);
+				}
+			}
+
+			numericQuantity = total;
+		}
+		// Regular number
+		else {
+			numericQuantity = Number.parseFloat(quantity.replace(/[^\d.]/g, ""));
+		}
+	} else {
+		numericQuantity = quantity;
+	}
 
 	// If the quantity is not a valid number, return the original
 	if (Number.isNaN(numericQuantity)) {

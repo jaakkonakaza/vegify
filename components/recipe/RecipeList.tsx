@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View, Text } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import type { Recipe, FilterOptions } from "@/models/Recipe";
 import { RecipeCard } from "@/components/recipe/RecipeCard";
@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useFilters } from "@/contexts/FilterContext";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 interface RecipeListProps {
 	recipes: Recipe[];
@@ -107,7 +108,8 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 
 		// Count dietary filters
 		if (filters.dietary) {
-			if (filters.dietary.vegan) count++;
+			// Only count vegan filter if it's not set in the user profile
+			if (filters.dietary.vegan && !preferences.isVegan) count++;
 			if (filters.dietary.vegetarian) count++;
 		}
 
@@ -115,28 +117,41 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 		if (filters.maxPrepTime) count++;
 
 		return count;
-	}, [filters, preferences.allergies]);
+	}, [filters, preferences.allergies, preferences.isVegan]);
 
 	// Determine if any filters are active, excluding user allergies
 	const isFilterActive = useMemo(() => {
 		// If there are no filters at all, return false
 		if (Object.keys(filters).length === 0) return false;
 
-		// If there are filters other than allergens, return true
-		const nonAllergenFilters = Object.keys(filters).filter(
-			(key) => key !== "allergens",
+		// If there are filters other than allergens and dietary, return true
+		const nonSpecialFilters = Object.keys(filters).filter(
+			(key) => key !== "allergens" && key !== "dietary",
 		);
-		if (nonAllergenFilters.length > 0) return true;
+		if (nonSpecialFilters.length > 0) return true;
 
-		// If there are only allergens, check if any are not from user preferences
+		// Check allergens
 		if (filters.allergens && filters.allergens.length > 0) {
-			return filters.allergens.some(
+			const hasManualAllergens = filters.allergens.some(
 				(allergen) => !preferences.allergies.includes(allergen),
 			);
+			if (hasManualAllergens) return true;
+		}
+
+		// Check dietary preferences
+		if (filters.dietary) {
+			// If vegan is set but user is not vegan in profile, count it
+			if (filters.dietary.vegan && !preferences.isVegan) return true;
+			// If vegetarian is set, always count it
+			if (filters.dietary.vegetarian) return true;
 		}
 
 		return false;
-	}, [filters, preferences.allergies]);
+	}, [filters, preferences.allergies, preferences.isVegan]);
+
+	const renderRecipeCard = ({ item }: { item: Recipe }) => {
+		return <RecipeCard recipe={item} searchTerm={searchQuery} />;
+	};
 
 	if (filteredRecipes.length === 0) {
 		return (
@@ -151,10 +166,10 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 					onFavoritesToggle={toggleFavoritesOnly}
 				/>
 				<View style={styles.emptyContainer}>
-					<ThemedText style={styles.emptyText}>No recipes found</ThemedText>
-					<ThemedText style={styles.emptySubtext}>
+					<IconSymbol name="magnifyingglass" size={64} color="#ccc" />
+					<ThemedText style={styles.emptyText}>
 						{showFavoritesOnly
-							? "You don't have any favorite recipes yet. Tap the heart icon on recipes to add them to your favorites."
+							? "No favorite recipes found"
 							: "Try adjusting your filters or search query"}
 					</ThemedText>
 				</View>
@@ -182,11 +197,21 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 				onFavoritesToggle={toggleFavoritesOnly}
 			/>
 			{title && <ThemedText style={styles.title}>{title}</ThemedText>}
+			{searchQuery.trim() !== "" && (
+				<View style={styles.searchResultsContainer}>
+					<ThemedText style={styles.searchResultsText}>
+						Found {filteredRecipes.length}{" "}
+						{filteredRecipes.length === 1 ? "recipe" : "recipes"}
+						{filteredRecipes.length > 0 ? " matching " : " for "}
+						<Text style={styles.searchQueryText}>"{searchQuery}"</Text>
+					</ThemedText>
+				</View>
+			)}
 			<FlatList
 				ref={flatListRef}
 				data={filteredRecipes}
 				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => <RecipeCard recipe={item} />}
+				renderItem={renderRecipeCard}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.listContent}
 				keyboardDismissMode="on-drag"
@@ -233,5 +258,16 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "#666",
 		textAlign: "center",
+	},
+	searchResultsContainer: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
+	searchResultsText: {
+		fontSize: 14,
+	},
+	searchQueryText: {
+		fontWeight: "bold",
+		fontStyle: "italic",
 	},
 });

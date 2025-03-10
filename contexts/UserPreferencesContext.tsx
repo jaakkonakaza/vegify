@@ -10,6 +10,7 @@ import type { UserPreferences } from "@/models/UserPreferences";
 import { defaultUserPreferences } from "@/models/UserPreferences";
 import type { Review } from "@/models/Recipe";
 import { sampleRecipes } from "@/models/sampleData";
+import { generateRandomReviews } from "@/utils/reviewUtils";
 
 interface UserPreferencesContextType {
 	preferences: UserPreferences;
@@ -21,6 +22,7 @@ interface UserPreferencesContextType {
 	addReview: (recipeId: string, rating: number, comment: string) => void;
 	getRecipeReviews: (recipeId: string) => Review[];
 	getAverageRating: (recipeId: string) => number;
+	setIsVegan: (isVegan: boolean) => void;
 }
 
 const UserPreferencesContext = createContext<
@@ -105,6 +107,10 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		setPreferences((prev) => ({ ...prev, unitType }));
 	};
 
+	const setIsVegan = (isVegan: boolean) => {
+		setPreferences((prev) => ({ ...prev, isVegan }));
+	};
+
 	const addAllergy = (allergy: string) => {
 		setPreferences((prev) => {
 			if (prev.allergies.includes(allergy)) return prev;
@@ -155,7 +161,20 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 	};
 
 	const getRecipeReviews = (recipeId: string) => {
-		return reviews[recipeId] || [];
+		const existingReviews = reviews[recipeId] || [];
+
+		// If there are no reviews, generate random ones
+		if (existingReviews.length === 0) {
+			// Get the recipe's rating from the sample data or use a default
+			const recipe = sampleRecipes.find((r) => r.id === recipeId);
+			const averageRating = recipe?.rating || 4.2; // Default to 4.2 if recipe not found
+
+			// Generate between 3 and 8 random reviews
+			const randomReviewCount = Math.floor(Math.random() * 6) + 3;
+			return generateRandomReviews(recipeId, randomReviewCount, averageRating);
+		}
+
+		return existingReviews;
 	};
 
 	const getAverageRating = (recipeId: string) => {
@@ -178,6 +197,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				addReview,
 				getRecipeReviews,
 				getAverageRating,
+				setIsVegan,
 			}}
 		>
 			{children}

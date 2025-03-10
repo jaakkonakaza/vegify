@@ -53,7 +53,6 @@ export default function RecipeParallaxView({
 	return (
 		<ThemedView style={styles.container}>
 			<Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-				{/* <View style={styles.headerContainer}> */}
 				<Animated.Image
 					source={
 						typeof headerImage === "string" ? { uri: headerImage } : headerImage

@@ -135,6 +135,8 @@ export function FilterModal({
 		if (visible) {
 			// Make sure user allergies are included in the filters
 			const updatedFilters = { ...currentFilters };
+
+			// Add user allergies if any
 			if (preferences.allergies.length > 0) {
 				// Get current allergens from filters
 				const currentAllergens = updatedFilters.allergens || [];
@@ -149,10 +151,18 @@ export function FilterModal({
 				}
 			}
 
+			// Add vegan preference if user is vegan
+			if (preferences.isVegan) {
+				updatedFilters.dietary = {
+					...updatedFilters.dietary,
+					vegan: true,
+				};
+			}
+
 			setFilters(updatedFilters);
 			setIngredientInput("");
 		}
-	}, [visible, currentFilters, preferences.allergies]);
+	}, [visible, currentFilters, preferences.allergies, preferences.isVegan]);
 
 	// Update matching recipes count when filters change
 	useEffect(() => {
@@ -195,7 +205,8 @@ export function FilterModal({
 
 		// Count dietary filters
 		if (filters.dietary) {
-			if (filters.dietary.vegan) count++;
+			// Only count vegan filter if it's not set in the user profile
+			if (filters.dietary.vegan && !preferences.isVegan) count++;
 			if (filters.dietary.vegetarian) count++;
 		}
 
@@ -203,7 +214,7 @@ export function FilterModal({
 		if (filters.maxPrepTime) count++;
 
 		return count;
-	}, [filters, preferences.allergies]);
+	}, [filters, preferences.allergies, preferences.isVegan]);
 
 	const handleApplyFilters = () => {
 		onApplyFilters(filters);
@@ -211,14 +222,23 @@ export function FilterModal({
 	};
 
 	const handleResetFilters = () => {
-		// Reset filters but preserve user allergies
+		// Reset filters but preserve user allergies and vegan preference
+		const newFilters: FilterOptions = {};
+
+		// Keep user allergies
 		if (preferences.allergies.length > 0) {
-			setFilters({
-				allergens: [...preferences.allergies],
-			});
-		} else {
-			setFilters({});
+			newFilters.allergens = [...preferences.allergies];
 		}
+
+		// Keep vegan preference if user is vegan
+		if (preferences.isVegan) {
+			newFilters.dietary = {
+				...newFilters.dietary,
+				vegan: true,
+			};
+		}
+
+		setFilters(newFilters);
 	};
 
 	const toggleMealTime = (mealTime: MealTime) => {
@@ -280,6 +300,12 @@ export function FilterModal({
 	const toggleDietary = (type: "vegan" | "vegetarian") => {
 		setFilters((prev) => {
 			const currentDietary = prev.dietary || {};
+
+			// If user is vegan, don't allow toggling off vegan filter
+			if (type === "vegan" && preferences.isVegan) {
+				return prev;
+			}
+
 			const newValue = !(currentDietary[type] || false);
 
 			return {
@@ -396,14 +422,18 @@ export function FilterModal({
 							{ backgroundColor: matchingRecipesBgColor },
 						]}
 					>
-						<Text style={[styles.matchingRecipesText, { color: tintColor }]}>
+						<Text style={[styles.matchingRecipesText, { color: textColor }]}>
 							{matchingRecipesCount}{" "}
 							{matchingRecipesCount === 1 ? "recipe" : "recipes"} match your
 							{activeFiltersCount > 0
 								? " filters"
-								: preferences.allergies.length > 0
-									? " allergies"
-									: ""}
+								: preferences.allergies.length > 0 && preferences.isVegan
+									? " allergies and vegan diet"
+									: preferences.allergies.length > 0
+										? " allergies"
+										: preferences.isVegan
+											? " vegan diet"
+											: ""}
 						</Text>
 					</View>
 
@@ -485,11 +515,20 @@ export function FilterModal({
 						<Text style={[styles.sectionTitle, { color: textColor }]}>
 							Dietary Preferences
 						</Text>
+						{preferences.isVegan && (
+							<Text style={[styles.infoText, { color: subtextColor }]}>
+								Vegan filter is applied from your profile settings and not
+								counted as an active filter.
+							</Text>
+						)}
 						<View style={styles.chipContainer}>
 							<FilterChip
-								label="Vegan"
+								label={preferences.isVegan ? "Vegan (from profile)" : "Vegan"}
 								selected={!!filters.dietary?.vegan}
 								onPress={() => toggleDietary("vegan")}
+								customStyle={
+									preferences.isVegan ? styles.profileChip : undefined
+								}
 							/>
 							<FilterChip
 								label="Vegetarian"
@@ -661,5 +700,13 @@ const styles = StyleSheet.create({
 	userAllergyChip: {
 		borderWidth: 2,
 		borderColor: "#FF6B6B",
+	},
+	profileChip: {
+		borderWidth: 2,
+		borderColor: "#999",
+	},
+	infoText: {
+		fontSize: 12,
+		marginBottom: 8,
 	},
 });

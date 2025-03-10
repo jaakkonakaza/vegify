@@ -1,4 +1,5 @@
 import type { Recipe, FilterOptions } from "./Recipe";
+import Fuse from "fuse.js";
 
 /**
  * Filter recipes based on the provided filter options
@@ -11,7 +12,8 @@ export function filterRecipes(
 		return recipes;
 	}
 
-	return recipes.filter((recipe) => {
+	// First apply all non-search filters
+	let filteredRecipes = recipes.filter((recipe) => {
 		// Filter by meal time
 		if (filters.mealTime && filters.mealTime.length > 0) {
 			if (!recipe.mealTime.some((time) => filters.mealTime?.includes(time))) {
@@ -79,25 +81,36 @@ export function filterRecipes(
 			}
 		}
 
-		// Filter by search query
-		if (filters.searchQuery && filters.searchQuery.trim() !== "") {
-			const query = filters.searchQuery.toLowerCase();
-			const nameMatch = recipe.name.toLowerCase().includes(query);
-			const descriptionMatch = recipe.description.toLowerCase().includes(query);
-			const ingredientMatch = recipe.ingredients.some((ing) =>
-				ing.name.toLowerCase().includes(query),
-			);
-			const tagMatch = recipe.tags.some((tag) =>
-				tag.toLowerCase().includes(query),
-			);
-
-			if (!(nameMatch || descriptionMatch || ingredientMatch || tagMatch)) {
-				return false;
-			}
-		}
-
 		return true;
 	});
+
+	// Then apply search query filter using Fuse.js for fuzzy searching
+	if (filters.searchQuery && filters.searchQuery.trim() !== "") {
+		const fuseOptions = {
+			includeScore: true,
+			shouldSort: true,
+			threshold: 0.4, // Lower threshold means more strict matching
+			location: 0,
+			distance: 100,
+			minMatchCharLength: 2,
+			keys: [
+				{ name: "name", weight: 0.5 }, // Recipe name is most important
+				{ name: "description", weight: 0.3 }, // Description is next
+				{ name: "ingredients.name", weight: 0.3 }, // Ingredients are important too
+				{ name: "tags", weight: 0.2 }, // Tags are less important
+				{ name: "cuisineType", weight: 0.1 }, // Cuisine type is least important
+				{ name: "dishType", weight: 0.1 }, // Dish type is least important
+			],
+		};
+
+		const fuse = new Fuse(filteredRecipes, fuseOptions);
+		const searchResults = fuse.search(filters.searchQuery);
+
+		// Extract the items from the search results
+		filteredRecipes = searchResults.map((result) => result.item);
+	}
+
+	return filteredRecipes;
 }
 
 /**

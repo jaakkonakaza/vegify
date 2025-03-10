@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import {
 	StyleSheet,
@@ -6,24 +7,37 @@ import {
 	View,
 	Text,
 	type GestureResponderEvent,
+	type StyleProp,
+	type TextStyle,
 } from "react-native";
 import { useRouter } from "expo-router";
 import type { Recipe } from "@/models/Recipe";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 import { getRecipeImage } from "@/utils/recipeUtils";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
-interface RecipeCardProps {
-	recipe: Recipe;
+// Component to highlight search terms in text
+interface HighlightedTextProps {
+	text: string;
+	searchTerm?: string;
+	style?: StyleProp<TextStyle>;
+	highlightStyle?: StyleProp<TextStyle>;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+interface RecipeCardProps {
+	recipe: Recipe;
+	searchTerm?: string;
+}
+
+export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 	const router = useRouter();
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
-	const subtextColor = colorScheme === "dark" ? "#9BA1A6" : "#666";
+	const textColor = Colors[colorScheme].text;
+	const subtextColor = isDark ? "#9BA1A6" : "#666";
 	const cardBackgroundColor = isDark ? "#1E1E1E" : "white";
 	const { isFavorite, toggleFavorite } = useUserPreferences();
 	const [randomLikes] = useState(Math.floor(Math.random() * 96) + 5);
@@ -101,17 +115,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
 			<View style={styles.content}>
 				<View style={styles.tagContainer}>
-					{recipe.vegan && (
-						<View style={styles.tag}>
-							<Text style={styles.tagText}>Vegan</Text>
-						</View>
-					)}
 					<View style={styles.timeContainer}>
 						<IconSymbol name="timer" size={14} color={subtextColor} />
 						<Text style={[styles.timeText, { color: subtextColor }]}>
 							{recipe.prepTime} min
 						</Text>
 					</View>
+					{recipe.vegan && (
+						<View style={styles.tag}>
+							<Text style={styles.tagText}>Vegan</Text>
+						</View>
+					)}
 				</View>
 				<ThemedText style={styles.title} numberOfLines={2}>
 					{recipe.name}
@@ -220,5 +234,9 @@ const styles = StyleSheet.create({
 	reviews: {
 		fontSize: 12,
 		color: "#666",
+	},
+	highlightedText: {
+		backgroundColor: "rgba(255, 215, 0, 0.3)",
+		fontWeight: "bold",
 	},
 });

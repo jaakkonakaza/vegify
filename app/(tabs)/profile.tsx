@@ -6,6 +6,7 @@ import {
 	Switch,
 	TextInput,
 	Image,
+	TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -20,7 +21,7 @@ import { sampleRecipes } from "@/models/sampleData";
 import { getFilterOptions } from "@/models/recipeUtils";
 
 export default function ProfileScreen() {
-	const { preferences, setUnitType, addAllergy, removeAllergy } =
+	const { preferences, setUnitType, addAllergy, removeAllergy, setIsVegan } =
 		useUserPreferences();
 	const { syncAllergies } = useFilters();
 	const colorScheme = useColorScheme() ?? "light";
@@ -99,7 +100,27 @@ export default function ProfileScreen() {
 					</View>
 
 					<View style={styles.section}>
-						{/* <ThemedText style={styles.sectionTitle}>Allergies</ThemedText>
+						<ThemedText style={styles.sectionTitle}>
+							Dietary Preferences
+						</ThemedText>
+						<View style={styles.settingRow}>
+							<ThemedText style={styles.settingLabel}>Vegan</ThemedText>
+							<Switch
+								value={preferences.isVegan}
+								onValueChange={(value) => setIsVegan(value)}
+								trackColor={{ false: "#767577", true: "#4CAF50" }}
+								thumbColor="#f4f3f4"
+							/>
+						</View>
+						<ThemedText style={styles.settingDescription}>
+							{preferences.isVegan
+								? "Only vegan recipes will be shown"
+								: "All recipes will be shown"}
+						</ThemedText>
+					</View>
+
+					<View style={styles.section}>
+						<ThemedText style={styles.sectionTitle}>Allergies</ThemedText>
 						<ThemedText style={styles.settingDescription}>
 							Add ingredients you're allergic to. Recipes containing these will
 							be filtered out automatically.

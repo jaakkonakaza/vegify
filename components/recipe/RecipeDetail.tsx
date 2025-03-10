@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import {
+	StyleSheet,
+	View,
+	Text,
+	TouchableOpacity,
+	Share,
+	Alert,
+} from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useRouter } from "expo-router";
 import type { Recipe } from "@/models/Recipe";
@@ -135,6 +142,62 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 		};
 	});
 
+	const shareRecipe = async () => {
+		try {
+			const result = await Share.share({
+				message: `Check out this recipe: ${recipe.name}`,
+				title: recipe.name,
+			});
+
+			if (result.action === Share.sharedAction) {
+				if (result.activityType) {
+					// shared with activity type of result.activityType
+				} else {
+					// shared
+				}
+			} else if (result.action === Share.dismissedAction) {
+				// dismissed
+			}
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error occurred";
+			Alert.alert("Error sharing", errorMessage);
+		}
+	};
+
+	const shareIngredients = async () => {
+		try {
+			// Create a formatted list of ingredients
+			const ingredientsList = processedIngredients
+				.map(
+					(ingredient) =>
+						`${ingredient.displayQuantity} ${ingredient.displayUnit || ""} ${ingredient.name}`,
+				)
+				.join("\n");
+
+			const shareText = {
+				message: `Ingredients for ${recipe.name}:\n\n${ingredientsList}`,
+				title: `${recipe.name} Ingredients`,
+			};
+
+			const result = await Share.share(shareText);
+
+			if (result.action === Share.sharedAction) {
+				if (result.activityType) {
+					// shared with activity type of result.activityType
+				} else {
+					// shared
+				}
+			} else if (result.action === Share.dismissedAction) {
+				// dismissed
+			}
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error occurred";
+			Alert.alert("Error sharing ingredients", errorMessage);
+		}
+	};
+
 	const headerContent = (
 		<View style={styles.headerControls}>
 			<TouchableOpacity
@@ -154,6 +217,13 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 					size={24}
 					color={favorite ? "#FF6B6B" : iconColor}
 				/>
+			</TouchableOpacity>
+			<TouchableOpacity
+				style={[styles.shareButton, { backgroundColor: buttonBgColor }]}
+				onPress={shareRecipe}
+				activeOpacity={0.7}
+			>
+				<IconSymbol name="square.and.arrow.up" size={24} color={iconColor} />
 			</TouchableOpacity>
 			<View style={[styles.timeContainer, { backgroundColor: buttonBgColor }]}>
 				<IconSymbol name="timer" size={16} color={subtextColor} />
@@ -198,6 +268,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 					<ThemedText style={styles.sectionTitle}>
 						Nutritional information
 					</ThemedText>
+					<ThemedText style={styles.sectionDescription}>Per serving</ThemedText>
 					<View style={styles.nutritionItems}>
 						<View style={styles.nutritionItem}>
 							<ThemedText style={styles.nutritionValue}>
@@ -297,6 +368,18 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 							</ThemedText>
 						</View>
 					))}
+
+					<TouchableOpacity
+						style={[
+							styles.shareIngredientsButton,
+							{ backgroundColor: "#4CAF50" },
+						]}
+						onPress={shareIngredients}
+						activeOpacity={0.7}
+					>
+						<IconSymbol name="square.and.arrow.up" size={18} color="white" />
+						<Text style={styles.shareIngredientsText}>Export Ingredients</Text>
+					</TouchableOpacity>
 				</View>
 
 				<View style={styles.section}>
@@ -346,6 +429,21 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		top: 40,
 		right: 20,
+		borderRadius: 20,
+		width: 40,
+		height: 40,
+		justifyContent: "center",
+		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	shareButton: {
+		position: "absolute",
+		top: 40,
+		right: 70,
 		borderRadius: 20,
 		width: 40,
 		height: 40,
@@ -435,6 +533,11 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: "bold",
 	},
+	sectionDescription: {
+		fontSize: 14,
+		marginBottom: 1,
+		fontStyle: "italic",
+	},
 	servingSizeContainer: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -517,5 +620,21 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		lineHeight: 24,
 		flex: 1,
+	},
+	shareIngredientsButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: 16,
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		alignSelf: "center",
+	},
+	shareIngredientsText: {
+		color: "white",
+		fontSize: 16,
+		fontWeight: "600",
+		marginLeft: 8,
 	},
 });
