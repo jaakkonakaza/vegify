@@ -12,7 +12,6 @@
 			"supportsTablet": true,
 			"bundleIdentifier": "com.jaakkonakaza.vegify",
 			"appleTeamId": "ZC29S92PKQ",
-			"statusBarStyle": "automatic",
 			"icon": {
 				"dark": "./assets/images/ios-dark.png",
 				"light": "./assets/images/ios-light.png",
@@ -50,6 +49,12 @@
 			"typedRoutes": true,
 			"reactCompiler": true
 		},
-		"primaryColor": "#4CAF50"
+		"primaryColor": "#4CAF50",
+		"extra": {
+			"router": {},
+			"eas": {
+				"projectId": "cf8cfa68-6543-4fd5-b4e6-0dabe6f57163"
+			}
+		}
 	}
 }

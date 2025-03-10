@@ -15,7 +15,7 @@ import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { FilterProvider } from "@/contexts/FilterContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
