@@ -240,13 +240,14 @@ const styles = StyleSheet.create({
 	},
 	listContent: {
 		paddingHorizontal: 16,
-		paddingBottom: 16,
+		paddingBottom: 90,
 	},
 	emptyContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
 		paddingHorizontal: 32,
+		paddingBottom: 90,
 	},
 	emptyText: {
 		fontSize: 18,

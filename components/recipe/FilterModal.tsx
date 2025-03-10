@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
 	StyleSheet,
 	View,
@@ -8,6 +8,12 @@ import {
 	ScrollView,
 	TextInput,
 	SafeAreaView,
+	KeyboardAvoidingView,
+	Platform,
+	TextInputSubmitEditingEventData,
+	NativeSyntheticEvent,
+	Keyboard,
+	TouchableWithoutFeedback,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { FilterChip } from "@/components/recipe/FilterChip";
@@ -111,6 +117,7 @@ export function FilterModal({
 		allRecipes.length,
 	);
 	const { preferences } = useUserPreferences();
+	const scrollViewRef = useRef<ScrollView>(null);
 
 	// Get the current color scheme
 	const colorScheme = useColorScheme() ?? "light";
@@ -331,6 +338,8 @@ export function FilterModal({
 				return prev;
 			});
 			setIngredientInput("");
+
+			scrollToBottom(true);
 		}
 	};
 
@@ -354,6 +363,13 @@ export function FilterModal({
 			...prev,
 			maxPrepTime: time,
 		}));
+	};
+
+	// Function to scroll to the bottom of the ScrollView
+	const scrollToBottom = (animated = true) => {
+		if (scrollViewRef.current) {
+			scrollViewRef.current.scrollToEnd({ animated: animated });
+		}
 	};
 
 	// Allergens section in the UI
@@ -398,204 +414,221 @@ export function FilterModal({
 			onRequestClose={onClose}
 		>
 			<SafeAreaView style={[styles.container, { backgroundColor }]}>
-				<View style={[styles.header, { borderBottomColor: borderColor }]}>
-					<TouchableOpacity onPress={onClose} style={styles.closeButton}>
-						<IconSymbol name="xmark" size={24} color={iconColor} />
-					</TouchableOpacity>
-					<Text style={[styles.title, { color: textColor }]}>
-						Filter Recipes{" "}
-						{activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}
-					</Text>
-					<TouchableOpacity
-						onPress={handleResetFilters}
-						style={styles.resetButton}
-					>
-						<Text style={[styles.resetText, { color: tintColor }]}>Reset</Text>
-					</TouchableOpacity>
-				</View>
-
-				<ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-					{/* Matching Recipes Count */}
-					<View
-						style={[
-							styles.matchingRecipesContainer,
-							{ backgroundColor: matchingRecipesBgColor },
-						]}
-					>
-						<Text style={[styles.matchingRecipesText, { color: textColor }]}>
-							{matchingRecipesCount}{" "}
-							{matchingRecipesCount === 1 ? "recipe" : "recipes"} match your
-							{activeFiltersCount > 0
-								? " filters"
-								: preferences.allergies.length > 0 && preferences.isVegan
-									? " allergies and vegan diet"
-									: preferences.allergies.length > 0
-										? " allergies"
-										: preferences.isVegan
-											? " vegan diet"
-											: ""}
+				<KeyboardAvoidingView
+					behavior={Platform.OS === "ios" ? "padding" : undefined}
+					style={{ flex: 1 }}
+				>
+					<View style={[styles.header, { borderBottomColor: borderColor }]}>
+						<TouchableOpacity onPress={onClose} style={styles.closeButton}>
+							<IconSymbol name="xmark" size={24} color={iconColor} />
+						</TouchableOpacity>
+						<Text style={[styles.title, { color: textColor }]}>
+							Filter Recipes{" "}
+							{activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}
 						</Text>
+						<TouchableOpacity
+							onPress={handleResetFilters}
+							style={styles.resetButton}
+						>
+							<Text style={[styles.resetText, { color: tintColor }]}>
+								Reset
+							</Text>
+						</TouchableOpacity>
 					</View>
 
-					{/* Meal Time Filter */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Meal Time
-						</Text>
-						<View style={styles.chipContainer}>
-							{filterOptions.mealTimes.map((time) => (
-								<FilterChip
-									key={time}
-									label={time.charAt(0).toUpperCase() + time.slice(1)}
-									selected={(filters.mealTime || []).includes(time as MealTime)}
-									onPress={() => toggleMealTime(time as MealTime)}
-								/>
-							))}
-						</View>
-					</View>
-
-					{/* Prep Time Filter */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Max Preparation Time
-						</Text>
-						<View style={styles.sliderContainer}>
-							<SimpleSlider
-								value={filters.maxPrepTime || 60}
-								onValueChange={setMaxPrepTime}
-								isDark={isDark}
-							/>
-							<Text
-								style={[
-									styles.sliderValue,
-									{ color: isDark ? "#9BA1A6" : "#666" },
-								]}
-							>
-								{filters.maxPrepTime || 60} minutes or less
+					<ScrollView
+						style={styles.scrollView}
+						contentContainerStyle={styles.scrollContent}
+						keyboardShouldPersistTaps="handled"
+						keyboardDismissMode="interactive"
+						ref={scrollViewRef}
+					>
+						{/* Matching Recipes Count */}
+						<View
+							style={[
+								styles.matchingRecipesContainer,
+								{ backgroundColor: matchingRecipesBgColor },
+							]}
+						>
+							<Text style={[styles.matchingRecipesText, { color: textColor }]}>
+								{matchingRecipesCount}{" "}
+								{matchingRecipesCount === 1 ? "recipe" : "recipes"} match your
+								{activeFiltersCount > 0
+									? " filters"
+									: preferences.allergies.length > 0 && preferences.isVegan
+										? " allergies and vegan diet"
+										: preferences.allergies.length > 0
+											? " allergies"
+											: preferences.isVegan
+												? " vegan diet"
+												: "filters"}
 							</Text>
 						</View>
-					</View>
 
-					{/* Cuisine Type Filter */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Cuisine
-						</Text>
-						<View style={styles.chipContainer}>
-							{filterOptions.cuisineTypes.map((cuisine) => (
-								<FilterChip
-									key={cuisine}
-									label={cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
-									selected={(filters.cuisineType || []).includes(cuisine)}
-									onPress={() => toggleCuisineType(cuisine)}
-								/>
-							))}
-						</View>
-					</View>
-
-					{/* Dish Type Filter */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Dish Type
-						</Text>
-						<View style={styles.chipContainer}>
-							{filterOptions.dishTypes.map((type) => (
-								<FilterChip
-									key={type}
-									label={type.charAt(0).toUpperCase() + type.slice(1)}
-									selected={(filters.dishType || []).includes(type)}
-									onPress={() => toggleDishType(type)}
-								/>
-							))}
-						</View>
-					</View>
-
-					{/* Dietary Preferences */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Dietary Preferences
-						</Text>
-						{preferences.isVegan && (
-							<Text style={[styles.infoText, { color: subtextColor }]}>
-								Vegan filter is applied from your profile settings and not
-								counted as an active filter.
+						{/* Meal Time Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Meal Time
 							</Text>
-						)}
-						<View style={styles.chipContainer}>
-							<FilterChip
-								label={preferences.isVegan ? "Vegan (from profile)" : "Vegan"}
-								selected={!!filters.dietary?.vegan}
-								onPress={() => toggleDietary("vegan")}
-								customStyle={
-									preferences.isVegan ? styles.profileChip : undefined
-								}
-							/>
-							<FilterChip
-								label="Vegetarian"
-								selected={!!filters.dietary?.vegetarian}
-								onPress={() => toggleDietary("vegetarian")}
-							/>
+							<View style={styles.chipContainer}>
+								{filterOptions.mealTimes.map((time) => (
+									<FilterChip
+										key={time}
+										label={time.charAt(0).toUpperCase() + time.slice(1)}
+										selected={(filters.mealTime || []).includes(
+											time as MealTime,
+										)}
+										onPress={() => toggleMealTime(time as MealTime)}
+									/>
+								))}
+							</View>
 						</View>
-					</View>
 
-					{/* Allergens Filter */}
-					{renderAllergensSection()}
-
-					{/* Ingredients Filter */}
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: textColor }]}>
-							Include Ingredients
-						</Text>
-						<View style={styles.inputContainer}>
-							<TextInput
-								style={[
-									styles.input,
-									{
-										backgroundColor: inputBackgroundColor,
-										borderColor: inputBorderColor,
-										color: textColor,
-									},
-								]}
-								value={ingredientInput}
-								onChangeText={setIngredientInput}
-								placeholder="Add ingredient you have"
-								placeholderTextColor={placeholderColor}
-								returnKeyType="done"
-								onSubmitEditing={addIngredient}
-							/>
-							<TouchableOpacity
-								style={[styles.addButton, { backgroundColor: tintColor }]}
-								onPress={addIngredient}
-							>
-								<IconSymbol name="plus" size={24} color="#fff" />
-							</TouchableOpacity>
-						</View>
-						<View style={styles.chipContainer}>
-							{(filters.includeIngredients || []).map((ingredient) => (
-								<FilterChip
-									key={ingredient}
-									label={ingredient}
-									selected={true}
-									onPress={() => removeIngredient(ingredient)}
-									showIcon={false}
+						{/* Prep Time Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Max Preparation Time
+							</Text>
+							<View style={styles.sliderContainer}>
+								<SimpleSlider
+									value={filters.maxPrepTime || 60}
+									onValueChange={setMaxPrepTime}
+									isDark={isDark}
 								/>
-							))}
+								<Text
+									style={[
+										styles.sliderValue,
+										{ color: isDark ? "#9BA1A6" : "#666" },
+									]}
+								>
+									{filters.maxPrepTime || 60} minutes or less
+								</Text>
+							</View>
 						</View>
-					</View>
-				</ScrollView>
 
-				<View style={[styles.footer, { borderTopColor: borderColor }]}>
-					<TouchableOpacity
-						style={[styles.applyButton, { backgroundColor: tintColor }]}
-						onPress={handleApplyFilters}
-					>
-						<Text style={styles.applyButtonText}>
-							Apply Filters (
-							{activeFiltersCount > 0 ? activeFiltersCount : "None"}) -{" "}
-							{matchingRecipesCount} recipes
-						</Text>
-					</TouchableOpacity>
-				</View>
+						{/* Cuisine Type Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Cuisine
+							</Text>
+							<View style={styles.chipContainer}>
+								{filterOptions.cuisineTypes.map((cuisine) => (
+									<FilterChip
+										key={cuisine}
+										label={cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
+										selected={(filters.cuisineType || []).includes(cuisine)}
+										onPress={() => toggleCuisineType(cuisine)}
+									/>
+								))}
+							</View>
+						</View>
+
+						{/* Dish Type Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Dish Type
+							</Text>
+							<View style={styles.chipContainer}>
+								{filterOptions.dishTypes.map((type) => (
+									<FilterChip
+										key={type}
+										label={type.charAt(0).toUpperCase() + type.slice(1)}
+										selected={(filters.dishType || []).includes(type)}
+										onPress={() => toggleDishType(type)}
+									/>
+								))}
+							</View>
+						</View>
+
+						{/* Dietary Preferences */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Dietary Preferences
+							</Text>
+							{preferences.isVegan && (
+								<Text style={[styles.infoText, { color: subtextColor }]}>
+									Vegan filter is applied from your profile settings and not
+									counted as an active filter.
+								</Text>
+							)}
+							<View style={styles.chipContainer}>
+								<FilterChip
+									label={preferences.isVegan ? "Vegan (from profile)" : "Vegan"}
+									selected={!!filters.dietary?.vegan}
+									onPress={() => toggleDietary("vegan")}
+									customStyle={
+										preferences.isVegan ? styles.profileChip : undefined
+									}
+								/>
+								<FilterChip
+									label="Vegetarian"
+									selected={!!filters.dietary?.vegetarian}
+									onPress={() => toggleDietary("vegetarian")}
+								/>
+							</View>
+						</View>
+
+						{/* Allergens Filter */}
+						{renderAllergensSection()}
+
+						{/* Ingredients Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Include Ingredients
+							</Text>
+							<View style={styles.inputContainer}>
+								<TextInput
+									style={[
+										styles.input,
+										{
+											backgroundColor: inputBackgroundColor,
+											borderColor: inputBorderColor,
+											color: textColor,
+										},
+									]}
+									value={ingredientInput}
+									onChangeText={setIngredientInput}
+									placeholder="Add ingredient you have"
+									placeholderTextColor={placeholderColor}
+									returnKeyType="done"
+									onSubmitEditing={addIngredient}
+									submitBehavior="submit"
+									onFocus={() => scrollToBottom(false)}
+								/>
+								<TouchableOpacity
+									style={[styles.addButton, { backgroundColor: tintColor }]}
+									onPress={addIngredient}
+								>
+									<IconSymbol name="plus" size={24} color="#fff" />
+								</TouchableOpacity>
+							</View>
+							<View style={styles.chipContainer}>
+								{(filters.includeIngredients || []).map((ingredient) => (
+									<FilterChip
+										key={ingredient}
+										label={ingredient}
+										selected={true}
+										onPress={() => removeIngredient(ingredient)}
+										showIcon={false}
+									/>
+								))}
+							</View>
+						</View>
+					</ScrollView>
+
+					<View style={[styles.footer, { borderTopColor: borderColor }]}>
+						<TouchableOpacity
+							style={[styles.applyButton, { backgroundColor: tintColor }]}
+							onPress={handleApplyFilters}
+						>
+							<Text style={styles.applyButtonText}>
+								Apply Filters (
+								{activeFiltersCount > 0 ? activeFiltersCount : "None"}) -{" "}
+								{matchingRecipesCount} recipes
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</KeyboardAvoidingView>
 			</SafeAreaView>
 		</Modal>
 	);
@@ -708,5 +741,11 @@ const styles = StyleSheet.create({
 	infoText: {
 		fontSize: 12,
 		marginBottom: 8,
+	},
+	scrollView: {
+		flex: 1,
+	},
+	scrollContent: {
+		padding: 16,
 	},
 });
