@@ -377,7 +377,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 						onPress={shareIngredients}
 						activeOpacity={0.7}
 					>
-						<IconSymbol name="square.and.arrow.up" size={18} color="white" />
+						<IconSymbol name="arrow.down.circle.fill" size={18} color="white" />
 						<Text style={styles.shareIngredientsText}>Export Ingredients</Text>
 					</TouchableOpacity>
 				</View>

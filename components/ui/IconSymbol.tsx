@@ -10,10 +10,12 @@ const MAPPING = {
 	// See MaterialIcons here: https://icons.expo.fyi
 	// See SF Symbols in the SF Symbols app on Mac.
 	"fork.knife": "food-bank",
+	"square.and.arrow.up": "share",
 	"house.fill": "home",
 	"paperplane.fill": "send",
 	"chevron.left.forwardslash.chevron.right": "code",
 	"chevron.right": "chevron-right",
+	"arrow.down.circle.fill": "download",
 	// Added mappings for Ionicons
 	"star.fill": "star",
 	star: "star-outline",
