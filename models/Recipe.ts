@@ -41,6 +41,8 @@ export interface Review {
 
 export type MealTime = "breakfast" | "lunch" | "dinner" | "snack" | "dessert";
 
+export type SortOption = "rating" | "favorites" | "prepTime" | "none";
+
 export interface FilterOptions {
 	mealTime?: MealTime[];
 	maxPrepTime?: number;
@@ -53,4 +55,6 @@ export interface FilterOptions {
 		vegetarian?: boolean;
 	};
 	searchQuery?: string;
+	sortBy?: SortOption;
+	sortDirection?: "asc" | "desc";
 }

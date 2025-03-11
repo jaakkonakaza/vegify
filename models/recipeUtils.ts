@@ -7,6 +7,7 @@ import Fuse from "fuse.js";
 export function filterRecipes(
 	recipes: Recipe[],
 	filters: FilterOptions,
+	recipeFavorites?: Record<string, number>,
 ): Recipe[] {
 	if (!filters || Object.keys(filters).length === 0) {
 		return recipes;
@@ -89,6 +90,31 @@ export function filterRecipes(
 
 		return true;
 	});
+
+	// Apply sorting if specified
+	if (filters.sortBy && filters.sortBy !== "none") {
+		const direction = filters.sortDirection === "asc" ? 1 : -1;
+
+		filteredRecipes.sort((a, b) => {
+			switch (filters.sortBy) {
+				case "rating":
+					return direction * (b.rating - a.rating);
+				case "prepTime":
+					return direction * (a.prepTime - b.prepTime);
+				case "favorites":
+					// Use actual favorite counts if available
+					if (recipeFavorites) {
+						const aFavorites = recipeFavorites[a.id] || 0;
+						const bFavorites = recipeFavorites[b.id] || 0;
+						return direction * (bFavorites - aFavorites);
+					}
+					// Fallback to reviewCount if favorite counts not available
+					return direction * (b.reviewCount - a.reviewCount);
+				default:
+					return 0;
+			}
+		});
+	}
 
 	// Then apply search query filter using Fuse.js for fuzzy searching
 	if (filters.searchQuery && filters.searchQuery.trim() !== "") {

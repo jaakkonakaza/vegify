@@ -27,6 +27,7 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 		searchQuery,
 		filters,
 		showFavoritesOnly,
+		recipeFavorites,
 		setSearchQuery,
 		setFilters,
 		setShowFavoritesOnly,
@@ -47,7 +48,7 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 		}
 
 		// First filter by the regular filters
-		let filtered = filterRecipes(recipes, newFilters);
+		let filtered = filterRecipes(recipes, newFilters, recipeFavorites);
 
 		// Then filter by favorites if needed
 		if (showFavoritesOnly) {
@@ -63,6 +64,7 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 		filters,
 		showFavoritesOnly,
 		preferences.favoriteRecipes,
+		recipeFavorites,
 	]);
 
 	const handleApplyFilters = (newFilters: FilterOptions) => {
@@ -115,6 +117,9 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 
 		// Count max prep time filter
 		if (filters.maxPrepTime) count++;
+
+		// Count sort option if it's not "none"
+		if (filters.sortBy && filters.sortBy !== "none") count++;
 
 		return count;
 	}, [filters, preferences.allergies, preferences.isVegan]);

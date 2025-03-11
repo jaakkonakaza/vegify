@@ -18,6 +18,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { getRecipeImage } from "@/utils/recipeUtils";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useFilters } from "@/contexts/FilterContext";
 
 // Component to highlight search terms in text
 interface HighlightedTextProps {
@@ -41,9 +42,10 @@ export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 	const cardBackgroundColor = isDark ? "#1E1E1E" : "white";
 	const cardBorderColor = isDark ? "#2A2A2A" : "#E0E0E0";
 	const { isFavorite, toggleFavorite } = useUserPreferences();
-	const [randomLikes] = useState(Math.floor(Math.random() * 96) + 5);
+	const { getFavoriteCount } = useFilters();
 
 	const isFavorited = isFavorite(recipe.id);
+	const likesCount = getFavoriteCount(recipe.id);
 
 	const handlePress = () => {
 		router.push({
@@ -111,9 +113,7 @@ export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 						size={24}
 						color={"#FF6B6B"}
 					/>
-					<Text style={styles.likesText}>
-						{randomLikes + (isFavorited ? 1 : 0)}
-					</Text>
+					<Text style={styles.likesText}>{likesCount}</Text>
 				</View>
 			</TouchableOpacity>
 

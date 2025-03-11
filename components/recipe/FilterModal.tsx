@@ -17,12 +17,18 @@ import {
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { FilterChip } from "@/components/recipe/FilterChip";
-import type { FilterOptions, MealTime, Recipe } from "@/models/Recipe";
+import type {
+	FilterOptions,
+	MealTime,
+	Recipe,
+	SortOption,
+} from "@/models/Recipe";
 import { filterRecipes } from "@/models/recipeUtils";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import Slider from "@react-native-community/slider";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useFilters } from "@/contexts/FilterContext";
 
 interface FilterModalProps {
 	visible: boolean;
@@ -118,6 +124,7 @@ export function FilterModal({
 	);
 	const { preferences } = useUserPreferences();
 	const scrollViewRef = useRef<ScrollView>(null);
+	const { searchQuery, recipeFavorites, setSearchQuery } = useFilters();
 
 	// Get the current color scheme
 	const colorScheme = useColorScheme() ?? "light";
@@ -173,9 +180,9 @@ export function FilterModal({
 
 	// Update matching recipes count when filters change
 	useEffect(() => {
-		const filteredRecipes = filterRecipes(allRecipes, filters);
+		const filteredRecipes = filterRecipes(allRecipes, filters, recipeFavorites);
 		setMatchingRecipesCount(filteredRecipes.length);
-	}, [filters, allRecipes]);
+	}, [filters, allRecipes, recipeFavorites]);
 
 	// Calculate the number of active filters, excluding user allergies
 	const activeFiltersCount = useMemo(() => {
@@ -219,6 +226,9 @@ export function FilterModal({
 
 		// Count max prep time filter
 		if (filters.maxPrepTime) count++;
+
+		// Count sort option if it's not "none"
+		if (filters.sortBy && filters.sortBy !== "none") count++;
 
 		return count;
 	}, [filters, preferences.allergies, preferences.isVegan]);
@@ -406,6 +416,25 @@ export function FilterModal({
 		);
 	};
 
+	const setSortOption = (option: SortOption) => {
+		setFilters((prev) => {
+			// If selecting the same option, toggle the direction
+			if (prev.sortBy === option) {
+				return {
+					...prev,
+					sortDirection: prev.sortDirection === "desc" ? "asc" : "desc",
+				};
+			}
+
+			// Otherwise, set the new sort option with default direction (desc)
+			return {
+				...prev,
+				sortBy: option,
+				sortDirection: "desc",
+			};
+		});
+	};
+
 	return (
 		<Modal
 			visible={visible}
@@ -422,7 +451,7 @@ export function FilterModal({
 						<TouchableOpacity onPress={onClose} style={styles.closeButton}>
 							<IconSymbol name="xmark" size={24} color={iconColor} />
 						</TouchableOpacity>
-						<Text style={[styles.title, { color: textColor }]}>
+						<Text style={[styles.headerTitle, { color: textColor }]}>
 							Filter Recipes{" "}
 							{activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}
 						</Text>
@@ -436,33 +465,68 @@ export function FilterModal({
 						</TouchableOpacity>
 					</View>
 
+					<View
+						style={[
+							styles.matchingRecipesContainer,
+							{ backgroundColor: matchingRecipesBgColor },
+						]}
+					>
+						<Text style={[styles.matchingRecipesText, { color: textColor }]}>
+							{matchingRecipesCount}{" "}
+							{matchingRecipesCount === 1 ? "recipe" : "recipes"} match your
+							{activeFiltersCount > 0
+								? " filters"
+								: preferences.allergies.length > 0 && preferences.isVegan
+									? " allergies and vegan diet"
+									: preferences.allergies.length > 0
+										? " allergies"
+										: preferences.isVegan
+											? " vegan diet"
+											: " filters"}
+						</Text>
+					</View>
+
 					<ScrollView
+						ref={scrollViewRef}
 						style={styles.scrollView}
 						contentContainerStyle={styles.scrollContent}
+						showsVerticalScrollIndicator={false}
 						keyboardShouldPersistTaps="handled"
-						keyboardDismissMode="interactive"
-						ref={scrollViewRef}
 					>
-						{/* Matching Recipes Count */}
-						<View
-							style={[
-								styles.matchingRecipesContainer,
-								{ backgroundColor: matchingRecipesBgColor },
-							]}
-						>
-							<Text style={[styles.matchingRecipesText, { color: textColor }]}>
-								{matchingRecipesCount}{" "}
-								{matchingRecipesCount === 1 ? "recipe" : "recipes"} match your
-								{activeFiltersCount > 0
-									? " filters"
-									: preferences.allergies.length > 0 && preferences.isVegan
-										? " allergies and vegan diet"
-										: preferences.allergies.length > 0
-											? " allergies"
-											: preferences.isVegan
-												? " vegan diet"
-												: " filters"}
+						{/* Sorting Options Section */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Sort By
 							</Text>
+							<Text style={[styles.sectionSubtitle, { color: subtextColor }]}>
+								Choose how to sort your recipes
+							</Text>
+							<View style={styles.chipContainer}>
+								<FilterChip
+									key="rating"
+									label={`Rating ${filters.sortBy === "rating" ? (filters.sortDirection === "desc" ? "↓" : "↑") : ""}`}
+									selected={filters.sortBy === "rating"}
+									onPress={() => setSortOption("rating")}
+								/>
+								<FilterChip
+									key="favorites"
+									label={`Most Favorited ${filters.sortBy === "favorites" ? (filters.sortDirection === "desc" ? "↓" : "↑") : ""}`}
+									selected={filters.sortBy === "favorites"}
+									onPress={() => setSortOption("favorites")}
+								/>
+								<FilterChip
+									key="prepTime"
+									label={`Prep Time ${filters.sortBy === "prepTime" ? (filters.sortDirection === "desc" ? "↓" : "↑") : ""}`}
+									selected={filters.sortBy === "prepTime"}
+									onPress={() => setSortOption("prepTime")}
+								/>
+								<FilterChip
+									key="none"
+									label="No Sorting"
+									selected={!filters.sortBy || filters.sortBy === "none"}
+									onPress={() => setSortOption("none")}
+								/>
+							</View>
 						</View>
 
 						{/* Meal Time Filter */}
@@ -471,14 +535,14 @@ export function FilterModal({
 								Meal Time
 							</Text>
 							<View style={styles.chipContainer}>
-								{filterOptions.mealTimes.map((time) => (
+								{filterOptions.mealTimes.map((mealTime) => (
 									<FilterChip
-										key={time}
-										label={time.charAt(0).toUpperCase() + time.slice(1)}
-										selected={(filters.mealTime || []).includes(
-											time as MealTime,
+										key={mealTime}
+										label={mealTime}
+										selected={Boolean(
+											filters.mealTime?.includes(mealTime as MealTime),
 										)}
-										onPress={() => toggleMealTime(time as MealTime)}
+										onPress={() => toggleMealTime(mealTime as MealTime)}
 									/>
 								))}
 							</View>
@@ -649,7 +713,7 @@ const styles = StyleSheet.create({
 	closeButton: {
 		padding: 4,
 	},
-	title: {
+	headerTitle: {
 		fontSize: 18,
 		fontWeight: "bold",
 	},
@@ -670,6 +734,11 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "bold",
 		marginBottom: 12,
+	},
+	sectionSubtitle: {
+		fontSize: 14,
+		marginBottom: 12,
+		opacity: 0.7,
 	},
 	chipContainer: {
 		flexDirection: "row",
