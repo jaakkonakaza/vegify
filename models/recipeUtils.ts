@@ -57,10 +57,16 @@ export function filterRecipes(
 
 		// Filter by dietary preferences
 		if (filters.dietary) {
-			if (filters.dietary.vegan && !recipe.vegan) {
+			if (filters.dietary.vegan && filters.dietary.vegetarian) {
+				// If both filters are enabled, show recipes that are either vegan OR vegetarian
+				if (!recipe.vegan && !recipe.vegetarian) {
+					return false;
+				}
+			} else if (filters.dietary.vegan && !recipe.vegan) {
+				// If only vegan filter is enabled
 				return false;
-			}
-			if (filters.dietary.vegetarian && !recipe.vegetarian) {
+			} else if (filters.dietary.vegetarian && !recipe.vegetarian) {
+				// If only vegetarian filter is enabled
 				return false;
 			}
 		}
