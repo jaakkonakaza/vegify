@@ -88,6 +88,24 @@ export function filterRecipes(
 			}
 		}
 
+		// Filter by excluded ingredients
+		if (filters.excludeIngredients && filters.excludeIngredients.length > 0) {
+			const recipeIngredientNames = recipe.ingredients.map((ing) =>
+				ing.name.toLowerCase(),
+			);
+
+			// Exclude recipe if it contains any of the excluded ingredients
+			if (
+				filters.excludeIngredients.some((ingredient) =>
+					recipeIngredientNames.some((name) =>
+						name.includes(ingredient.toLowerCase()),
+					),
+				)
+			) {
+				return false;
+			}
+		}
+
 		return true;
 	});
 

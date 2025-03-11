@@ -20,7 +20,7 @@ interface FilterContextType {
 	setFilters: (filters: FilterOptions) => void;
 	setShowFavoritesOnly: (show: boolean) => void;
 	clearFilters: () => void;
-	syncAllergies: () => void;
+	syncUserPreferences: () => void;
 	getFavoriteCount: (recipeId: string) => number;
 }
 
@@ -54,13 +54,19 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 		recipeFavoritesRef.current = recipeFavorites;
 	}, [recipeFavorites]);
 
-	// Initialize filters with user's allergies and vegan preference
+	// Initialize filters with user's allergies, excluded ingredients, and vegan preference
 	useEffect(() => {
 		const newFilters: FilterOptions = {};
 
 		// Add allergies if any
 		if (preferences.allergies.length > 0) {
 			newFilters.allergens = [...preferences.allergies];
+		}
+
+		console.log("excludedIngredients", preferences.excludedIngredients);
+		// Add excluded ingredients if any
+		if (preferences.excludedIngredients.length > 0) {
+			newFilters.excludeIngredients = [...preferences.excludedIngredients];
 		}
 
 		// Add vegan preference if user is vegan
@@ -72,7 +78,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 		}
 
 		setFilters(newFilters);
-	}, [preferences.allergies, preferences.isVegan]);
+	}, [
+		preferences.allergies,
+		preferences.excludedIngredients,
+		preferences.isVegan,
+	]);
 
 	// Update recipe favorites when user favorites change
 	useEffect(() => {
@@ -113,8 +123,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 		[recipeFavorites],
 	);
 
-	// Function to sync allergies from user preferences to filters
-	const syncAllergies = useCallback(() => {
+	// Function to sync allergies and excluded ingredients from user preferences to filters
+	const syncUserPreferences = useCallback(() => {
 		setFilters((prevFilters) => {
 			const newFilters = { ...prevFilters };
 
@@ -126,11 +136,18 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 				newFilters.allergens = undefined;
 			}
 
+			// Update excluded ingredients
+			if (preferences.excludedIngredients.length > 0) {
+				newFilters.excludeIngredients = [...preferences.excludedIngredients];
+			} else {
+				newFilters.excludeIngredients = undefined;
+			}
+
 			return newFilters;
 		});
-	}, [preferences.allergies]);
+	}, [preferences.allergies, preferences.excludedIngredients]);
 
-	// Modified clear filters to preserve user allergies and vegan preference
+	// Modified clear filters to preserve user allergies, excluded ingredients, and vegan preference
 	const clearFilters = useCallback(() => {
 		setSearchQuery("");
 
@@ -140,6 +157,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 		// Keep allergies from user preferences
 		if (preferences.allergies.length > 0) {
 			newFilters.allergens = [...preferences.allergies];
+		}
+
+		// Keep excluded ingredients from user preferences
+		if (preferences.excludedIngredients.length > 0) {
+			newFilters.excludeIngredients = [...preferences.excludedIngredients];
 		}
 
 		// Keep vegan preference if user is vegan
@@ -152,7 +174,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 
 		setFilters(newFilters);
 		setShowFavoritesOnly(false);
-	}, [preferences.allergies, preferences.isVegan]);
+	}, [
+		preferences.allergies,
+		preferences.excludedIngredients,
+		preferences.isVegan,
+	]);
 
 	return (
 		<FilterContext.Provider
@@ -165,7 +191,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 				setFilters,
 				setShowFavoritesOnly,
 				clearFilters,
-				syncAllergies,
+				syncUserPreferences,
 				getFavoriteCount,
 			}}
 		>

@@ -17,6 +17,8 @@ interface UserPreferencesContextType {
 	setUnitType: (unitType: "metric" | "imperial") => void;
 	addAllergy: (allergy: string) => void;
 	removeAllergy: (allergy: string) => void;
+	addExcludedIngredient: (ingredient: string) => void;
+	removeExcludedIngredient: (ingredient: string) => void;
 	toggleFavorite: (recipeId: string) => void;
 	isFavorite: (recipeId: string) => boolean;
 	addReview: (recipeId: string, rating: number, comment: string) => void;
@@ -49,7 +51,10 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				const storedReviews = await AsyncStorage.getItem(REVIEWS_STORAGE_KEY);
 
 				if (storedPreferences) {
-					setPreferences(JSON.parse(storedPreferences));
+					setPreferences({
+						...preferences,
+						...JSON.parse(storedPreferences),
+					});
 				}
 
 				if (storedReviews) {
@@ -124,6 +129,25 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		setPreferences((prev) => ({
 			...prev,
 			allergies: prev.allergies.filter((a) => a !== allergy),
+		}));
+	};
+
+	const addExcludedIngredient = (ingredient: string) => {
+		setPreferences((prev) => {
+			if (prev.excludedIngredients.includes(ingredient)) return prev;
+			return {
+				...prev,
+				excludedIngredients: [...prev.excludedIngredients, ingredient],
+			};
+		});
+	};
+
+	const removeExcludedIngredient = (ingredient: string) => {
+		setPreferences((prev) => ({
+			...prev,
+			excludedIngredients: prev.excludedIngredients.filter(
+				(i) => i !== ingredient,
+			),
 		}));
 	};
 
@@ -205,6 +229,8 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				setUnitType,
 				addAllergy,
 				removeAllergy,
+				addExcludedIngredient,
+				removeExcludedIngredient,
 				toggleFavorite,
 				isFavorite,
 				addReview,

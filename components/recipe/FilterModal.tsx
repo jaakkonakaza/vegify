@@ -119,6 +119,7 @@ export function FilterModal({
 }: FilterModalProps) {
 	const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 	const [ingredientInput, setIngredientInput] = useState("");
+	const [excludeIngredientInput, setExcludeIngredientInput] = useState("");
 	const [matchingRecipesCount, setMatchingRecipesCount] = useState(
 		allRecipes.length,
 	);
@@ -175,6 +176,7 @@ export function FilterModal({
 
 			setFilters(updatedFilters);
 			setIngredientInput("");
+			setExcludeIngredientInput("");
 		}
 	}, [visible, currentFilters, preferences.allergies, preferences.isVegan]);
 
@@ -217,6 +219,11 @@ export function FilterModal({
 			count += filters.includeIngredients.length;
 		}
 
+		// Count excluded ingredient filters
+		if (filters.excludeIngredients && filters.excludeIngredients.length > 0) {
+			count += filters.excludeIngredients.length;
+		}
+
 		// Count dietary filters
 		if (filters.dietary) {
 			// Only count vegan filter if it's not set in the user profile
@@ -255,7 +262,13 @@ export function FilterModal({
 			};
 		}
 
+		if (preferences.excludedIngredients.length > 0) {
+			newFilters.excludeIngredients = [...preferences.excludedIngredients];
+		}
+
 		setFilters(newFilters);
+		setIngredientInput("");
+		setExcludeIngredientInput("");
 	};
 
 	const toggleMealTime = (mealTime: MealTime) => {
@@ -336,21 +349,26 @@ export function FilterModal({
 	};
 
 	const addIngredient = () => {
-		if (ingredientInput.trim()) {
-			setFilters((prev) => {
-				const currentIngredients = prev.includeIngredients || [];
-				if (!currentIngredients.includes(ingredientInput.trim())) {
-					return {
-						...prev,
-						includeIngredients: [...currentIngredients, ingredientInput.trim()],
-					};
-				}
-				return prev;
-			});
-			setIngredientInput("");
+		if (!ingredientInput.trim()) return;
 
-			scrollToBottom(true);
-		}
+		setFilters((prev) => {
+			const currentIngredients = prev.includeIngredients || [];
+			// Don't add if already exists
+			if (
+				currentIngredients.some(
+					(ing) => ing.toLowerCase() === ingredientInput.trim().toLowerCase(),
+				)
+			)
+				return prev;
+
+			return {
+				...prev,
+				includeIngredients: [...currentIngredients, ingredientInput.trim()],
+			};
+		});
+
+		setIngredientInput("");
+		scrollToBottom();
 	};
 
 	const removeIngredient = (ingredient: string) => {
@@ -364,6 +382,48 @@ export function FilterModal({
 				...prev,
 				includeIngredients:
 					newIngredients.length > 0 ? newIngredients : undefined,
+			};
+		});
+	};
+
+	const addExcludeIngredient = () => {
+		if (!excludeIngredientInput.trim()) return;
+
+		setFilters((prev) => {
+			const currentExcludeIngredients = prev.excludeIngredients || [];
+			// Don't add if already exists
+			if (
+				currentExcludeIngredients.some(
+					(ing) =>
+						ing.toLowerCase() === excludeIngredientInput.trim().toLowerCase(),
+				)
+			)
+				return prev;
+
+			return {
+				...prev,
+				excludeIngredients: [
+					...currentExcludeIngredients,
+					excludeIngredientInput.trim(),
+				],
+			};
+		});
+
+		setExcludeIngredientInput("");
+		scrollToBottom();
+	};
+
+	const removeExcludeIngredient = (ingredient: string) => {
+		setFilters((prev) => {
+			const currentExcludeIngredients = prev.excludeIngredients || [];
+			const newExcludeIngredients = currentExcludeIngredients.filter(
+				(ing) => ing !== ingredient,
+			);
+
+			return {
+				...prev,
+				excludeIngredients:
+					newExcludeIngredients.length > 0 ? newExcludeIngredients : undefined,
 			};
 		});
 	};
@@ -635,10 +695,13 @@ export function FilterModal({
 						{/* Allergens Filter */}
 						{renderAllergensSection()}
 
-						{/* Ingredients Filter */}
+						{/* Include Ingredients Filter */}
 						<View style={styles.section}>
 							<Text style={[styles.sectionTitle, { color: textColor }]}>
 								Include Ingredients
+							</Text>
+							<Text style={[styles.sectionSubtitle, { color: subtextColor }]}>
+								Show recipes containing at least one of these ingredients
 							</Text>
 							<View style={styles.inputContainer}>
 								<TextInput
@@ -673,6 +736,53 @@ export function FilterModal({
 										label={ingredient}
 										selected={true}
 										onPress={() => removeIngredient(ingredient)}
+										showIcon={false}
+									/>
+								))}
+							</View>
+						</View>
+
+						{/* Exclude Ingredients Filter */}
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: textColor }]}>
+								Exclude Ingredients
+							</Text>
+							<Text style={[styles.sectionSubtitle, { color: subtextColor }]}>
+								Filter out recipes containing these ingredients
+							</Text>
+							<View style={styles.inputContainer}>
+								<TextInput
+									style={[
+										styles.input,
+										{
+											backgroundColor: inputBackgroundColor,
+											borderColor: inputBorderColor,
+											color: textColor,
+										},
+									]}
+									value={excludeIngredientInput}
+									onChangeText={setExcludeIngredientInput}
+									placeholder="Add ingredient you want to avoid"
+									placeholderTextColor={placeholderColor}
+									returnKeyType="done"
+									onSubmitEditing={addExcludeIngredient}
+									submitBehavior="submit"
+									onFocus={() => scrollToBottom(false)}
+								/>
+								<TouchableOpacity
+									style={[styles.addButton, { backgroundColor: tintColor }]}
+									onPress={addExcludeIngredient}
+								>
+									<IconSymbol name="plus" size={24} color="#fff" />
+								</TouchableOpacity>
+							</View>
+							<View style={styles.chipContainer}>
+								{(filters.excludeIngredients || []).map((ingredient) => (
+									<FilterChip
+										key={ingredient}
+										label={ingredient}
+										selected={true}
+										onPress={() => removeExcludeIngredient(ingredient)}
 										showIcon={false}
 									/>
 								))}

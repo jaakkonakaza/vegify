@@ -50,6 +50,7 @@ export interface FilterOptions {
 	dishType?: string[];
 	allergens?: string[];
 	includeIngredients?: string[];
+	excludeIngredients?: string[];
 	dietary?: {
 		vegan?: boolean;
 		vegetarian?: boolean;

@@ -108,6 +108,11 @@ export function RecipeList({ recipes, title }: RecipeListProps) {
 			count += filters.includeIngredients.length;
 		}
 
+		// Count excluded ingredient filters
+		if (filters.excludeIngredients && filters.excludeIngredients.length > 0) {
+			count += filters.excludeIngredients.length;
+		}
+
 		// Count dietary filters
 		if (filters.dietary) {
 			// Only count vegan filter if it's not set in the user profile

@@ -28,10 +28,12 @@ export default function ProfileScreen() {
 		setUnitType,
 		addAllergy,
 		removeAllergy,
+		addExcludedIngredient,
+		removeExcludedIngredient,
 		setIsVegan,
 		resetPreferences,
 	} = useUserPreferences();
-	const { syncAllergies, clearFilters } = useFilters();
+	const { syncUserPreferences, clearFilters } = useFilters();
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
 	const router = useRouter();
@@ -43,9 +45,10 @@ export default function ProfileScreen() {
 	const placeholderColor = isDark ? "#777" : "#999";
 
 	const [newAllergy, setNewAllergy] = useState("");
+	const [newExcludedIngredient, setNewExcludedIngredient] = useState("");
 	const [commonAllergens, setCommonAllergens] = useState<string[]>([]);
 
-	// Get common allergens from all recipes
+	// Get common allergens and ingredients from all recipes
 	useEffect(() => {
 		const filterOptions = getFilterOptions(sampleRecipes);
 		setCommonAllergens(filterOptions.allergens);
@@ -53,17 +56,17 @@ export default function ProfileScreen() {
 
 	const handleAddAllergy = () => {
 		if (newAllergy.trim()) {
-			addAllergy(newAllergy.trim());
+			addAllergy(newAllergy.trim().toLowerCase());
 			setNewAllergy("");
 			// Sync allergies with filters
-			syncAllergies();
+			syncUserPreferences();
 		}
 	};
 
 	const handleRemoveAllergy = (allergy: string) => {
 		removeAllergy(allergy);
 		// Sync allergies with filters
-		syncAllergies();
+		syncUserPreferences();
 	};
 
 	const handleToggleAllergy = (allergy: string) => {
@@ -73,13 +76,38 @@ export default function ProfileScreen() {
 			addAllergy(allergy);
 		}
 		// Sync allergies with filters
-		syncAllergies();
+		syncUserPreferences();
+	};
+
+	const handleAddExcludedIngredient = () => {
+		if (newExcludedIngredient.trim()) {
+			addExcludedIngredient(newExcludedIngredient.trim().toLowerCase());
+			setNewExcludedIngredient("");
+			// Sync excluded ingredients with filters
+			syncUserPreferences();
+		}
+	};
+
+	const handleRemoveExcludedIngredient = (ingredient: string) => {
+		removeExcludedIngredient(ingredient);
+		// Sync excluded ingredients with filters
+		syncUserPreferences();
+	};
+
+	const handleToggleExcludedIngredient = (ingredient: string) => {
+		if (preferences.excludedIngredients.includes(ingredient)) {
+			removeExcludedIngredient(ingredient);
+		} else {
+			addExcludedIngredient(ingredient);
+		}
+		// Sync excluded ingredients with filters
+		syncUserPreferences();
 	};
 
 	const handleResetDemo = () => {
 		Alert.alert(
 			"Reset Demo",
-			"This will reset all your preferences and remove your profile. Are you sure?",
+			"This will reset all your preferences and favorites. Are you sure?",
 			[
 				{
 					text: "Cancel",
@@ -87,16 +115,9 @@ export default function ProfileScreen() {
 				},
 				{
 					text: "Reset",
-					style: "destructive",
 					onPress: () => {
-						// Reset preferences
 						resetPreferences();
-
-						// Clear filters
 						clearFilters();
-
-						// Navigate back to sign-in
-						router.replace("/auth/sign-in");
 					},
 				},
 			],
@@ -218,6 +239,58 @@ export default function ProfileScreen() {
 						)}
 					</View>
 
+					<View style={styles.section}>
+						{/* Excluded ingredients section */}
+						<ThemedText style={styles.sectionTitle}>
+							Excluded Ingredients
+						</ThemedText>
+						<ThemedText style={styles.settingDescription}>
+							Ingredients you want to avoid in recipes.
+						</ThemedText>
+
+						{/* Input for adding new excluded ingredients */}
+						<View style={styles.inputContainer}>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										backgroundColor: inputBackgroundColor,
+										borderColor: inputBorderColor,
+										color: textColor,
+									},
+								]}
+								value={newExcludedIngredient}
+								onChangeText={setNewExcludedIngredient}
+								placeholder="Add ingredient to avoid"
+								placeholderTextColor={placeholderColor}
+								returnKeyType="done"
+								onSubmitEditing={handleAddExcludedIngredient}
+							/>
+							<TouchableOpacity
+								style={styles.addButton}
+								onPress={handleAddExcludedIngredient}
+							>
+								<IconSymbol name="plus" size={20} color="#fff" />
+							</TouchableOpacity>
+						</View>
+
+						{/* Display current excluded ingredients */}
+						{preferences.excludedIngredients.length > 0 && (
+							<View style={styles.chipContainer}>
+								{preferences.excludedIngredients.map((ingredient) => (
+									<FilterChip
+										key={ingredient}
+										label={
+											ingredient.charAt(0).toUpperCase() + ingredient.slice(1)
+										}
+										selected={true}
+										onPress={() => handleRemoveExcludedIngredient(ingredient)}
+									/>
+								))}
+							</View>
+						)}
+					</View>
+
 					{/* Reset Demo section */}
 					<View style={styles.section}>
 						<ThemedText style={styles.sectionTitle}>Demo Controls</ThemedText>
@@ -280,9 +353,8 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginBottom: 12,
 	},
-	subsectionTitle: {
+	settingSubtitle: {
 		fontSize: 16,
-		fontWeight: "bold",
 		marginTop: 16,
 		marginBottom: 8,
 	},
@@ -297,62 +369,58 @@ const styles = StyleSheet.create({
 	},
 	settingDescription: {
 		fontSize: 14,
+		opacity: 0.7,
 		marginBottom: 12,
 	},
 	inputContainer: {
 		flexDirection: "row",
-		marginBottom: 12,
+		marginBottom: 16,
 	},
 	input: {
 		flex: 1,
+		height: 40,
 		borderWidth: 1,
 		borderRadius: 8,
 		paddingHorizontal: 12,
-		paddingVertical: 8,
-		fontSize: 14,
 	},
 	addButton: {
-		backgroundColor: "#4CAF50",
 		width: 40,
-		justifyContent: "center",
-		alignItems: "center",
+		height: 40,
+		backgroundColor: "#4CAF50",
 		borderRadius: 8,
 		marginLeft: 8,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 	chipContainer: {
 		flexDirection: "row",
 		flexWrap: "wrap",
-		marginBottom: 8,
+		marginTop: 8,
 	},
-	emptyText: {
-		fontSize: 14,
-		fontStyle: "italic",
+	resetButton: {
+		backgroundColor: "#FF6B6B",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+	},
+	resetButtonText: {
+		color: "#fff",
+		fontWeight: "bold",
+		marginLeft: 8,
 	},
 	createAccountButton: {
 		backgroundColor: "#4CAF50",
 		paddingVertical: 12,
+		paddingHorizontal: 16,
 		borderRadius: 8,
 		alignItems: "center",
-		marginTop: 16,
+		marginTop: 8,
 	},
 	createAccountButtonText: {
 		color: "#fff",
-		fontSize: 16,
-		fontWeight: "500",
-	},
-	resetButton: {
-		backgroundColor: "#FF6B6B",
-		paddingVertical: 12,
-		borderRadius: 8,
-		alignItems: "center",
-		marginTop: 16,
-		flexDirection: "row",
-		justifyContent: "center",
-	},
-	resetButtonText: {
-		color: "#fff",
-		fontSize: 16,
-		fontWeight: "500",
-		marginLeft: 8,
+		fontWeight: "bold",
 	},
 });
