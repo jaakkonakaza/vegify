@@ -23,6 +23,8 @@ interface UserPreferencesContextType {
 	getRecipeReviews: (recipeId: string) => Review[];
 	getAverageRating: (recipeId: string) => number;
 	setIsVegan: (isVegan: boolean) => void;
+	setUserName: (userName: string) => void;
+	resetPreferences: () => void;
 }
 
 const UserPreferencesContext = createContext<
@@ -185,6 +187,17 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		return sum / recipeReviews.length;
 	};
 
+	const setUserName = (userName: string) => {
+		setPreferences((prev) => ({ ...prev, userName }));
+	};
+
+	const resetPreferences = () => {
+		setPreferences(defaultUserPreferences);
+
+		// Also reset reviews
+		setReviews({});
+	};
+
 	return (
 		<UserPreferencesContext.Provider
 			value={{
@@ -198,6 +211,8 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				getRecipeReviews,
 				getAverageRating,
 				setIsVegan,
+				setUserName,
+				resetPreferences,
 			}}
 		>
 			{children}

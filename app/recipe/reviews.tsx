@@ -23,7 +23,7 @@ import { Colors } from "@/constants/Colors";
 export default function ReviewsScreen() {
 	const router = useRouter();
 	const { recipeId } = useLocalSearchParams<{ recipeId: string }>();
-	const { addReview, getRecipeReviews } = useUserPreferences();
+	const { addReview, getRecipeReviews, preferences } = useUserPreferences();
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
 
@@ -35,11 +35,44 @@ export default function ReviewsScreen() {
 	const placeholderColor = isDark ? "#777" : "#999";
 	const reviewItemBgColor = isDark ? "#1E1E1E" : "#f9f9f9";
 
-	const [activeTab, setActiveTab] = useState<"read" | "write">("read");
+	// Set initial tab based on whether user is logged in
+	const [activeTab, setActiveTab] = useState<"read" | "write">(
+		preferences.userName ? "write" : "read",
+	);
 	const [newRating, setNewRating] = useState(5);
 	const [newComment, setNewComment] = useState("");
-	const [userName, setUserName] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	// Create component-specific styles
+	const guestStyles = StyleSheet.create({
+		guestModeContainer: {
+			backgroundColor: reviewItemBgColor,
+			borderRadius: 12,
+			padding: 24,
+			marginVertical: 16,
+			alignItems: "center" as const,
+		},
+		guestModeText: {
+			fontSize: 16,
+			textAlign: "center" as const,
+			marginBottom: 16,
+			color: textColor,
+		},
+		createAccountButton: {
+			backgroundColor: "#4CAF50",
+			paddingVertical: 12,
+			paddingHorizontal: 24,
+			borderRadius: 8,
+			alignItems: "center" as const,
+			width: "100%",
+			marginTop: 8,
+		},
+		createAccountButtonText: {
+			color: "#fff",
+			fontWeight: "600" as const,
+			fontSize: 16,
+		},
+	});
 
 	// Find the recipe from sample data
 	const recipe = sampleRecipes.find((r) => r.id === recipeId);
@@ -57,7 +90,11 @@ export default function ReviewsScreen() {
 
 	const handleSubmitReview = () => {
 		if (newComment.trim() === "") return;
-		if (userName.trim() === "") return;
+		if (!preferences.userName) {
+			// Redirect to sign in if user is in guest mode
+			router.push("/auth/sign-in");
+			return;
+		}
 
 		setIsSubmitting(true);
 
@@ -180,68 +217,64 @@ export default function ReviewsScreen() {
 					Share your experience with {recipe.name}
 				</ThemedText>
 
-				<View style={styles.formGroup}>
-					<ThemedText style={styles.label}>Your Name</ThemedText>
-					<TextInput
-						style={[
-							styles.input,
-							{
-								backgroundColor: inputBackgroundColor,
-								borderColor: inputBorderColor,
-								color: textColor,
-							},
-						]}
-						value={userName}
-						onChangeText={setUserName}
-						placeholder="Enter your name"
-						placeholderTextColor={placeholderColor}
-					/>
-				</View>
+				{!preferences.userName ? (
+					<View style={guestStyles.guestModeContainer}>
+						<ThemedText style={guestStyles.guestModeText}>
+							You need to create an account to submit reviews.
+						</ThemedText>
+						<TouchableOpacity
+							style={guestStyles.createAccountButton}
+							onPress={() => router.push("/auth/sign-in")}
+						>
+							<ThemedText style={guestStyles.createAccountButtonText}>
+								Create Account
+							</ThemedText>
+						</TouchableOpacity>
+					</View>
+				) : (
+					<>
+						<View style={styles.formGroup}>
+							<ThemedText style={styles.label}>Rating</ThemedText>
+							{renderRatingSelector()}
+						</View>
 
-				<View style={styles.formGroup}>
-					<ThemedText style={styles.label}>Rating</ThemedText>
-					{renderRatingSelector()}
-				</View>
+						<View style={styles.formGroup}>
+							<ThemedText style={styles.label}>Your Review</ThemedText>
+							<TextInput
+								style={[
+									styles.input,
+									styles.textArea,
+									{
+										backgroundColor: inputBackgroundColor,
+										borderColor: inputBorderColor,
+										color: textColor,
+									},
+								]}
+								value={newComment}
+								onChangeText={setNewComment}
+								placeholder="What did you think about this recipe?"
+								placeholderTextColor={placeholderColor}
+								multiline
+								numberOfLines={4}
+								textAlignVertical="top"
+							/>
+						</View>
 
-				<View style={styles.formGroup}>
-					<ThemedText style={styles.label}>Your Review</ThemedText>
-					<TextInput
-						style={[
-							styles.input,
-							styles.textArea,
-							{
-								backgroundColor: inputBackgroundColor,
-								borderColor: inputBorderColor,
-								color: textColor,
-							},
-						]}
-						value={newComment}
-						onChangeText={setNewComment}
-						placeholder="What did you think about this recipe?"
-						placeholderTextColor={placeholderColor}
-						multiline
-						numberOfLines={4}
-						textAlignVertical="top"
-					/>
-				</View>
-
-				<TouchableOpacity
-					style={[
-						styles.submitButton,
-						(newComment.trim() === "" ||
-							userName.trim() === "" ||
-							isSubmitting) &&
-							styles.disabledButton,
-					]}
-					onPress={handleSubmitReview}
-					disabled={
-						newComment.trim() === "" || userName.trim() === "" || isSubmitting
-					}
-				>
-					<Text style={styles.submitButtonText}>
-						{isSubmitting ? "Submitting..." : "Submit Review"}
-					</Text>
-				</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.submitButton,
+								(newComment.trim() === "" || isSubmitting) &&
+									styles.disabledButton,
+							]}
+							onPress={handleSubmitReview}
+							disabled={newComment.trim() === "" || isSubmitting}
+						>
+							<Text style={styles.submitButtonText}>
+								{isSubmitting ? "Submitting..." : "Submit Review"}
+							</Text>
+						</TouchableOpacity>
+					</>
+				)}
 			</ScrollView>
 		</KeyboardAvoidingView>
 	);

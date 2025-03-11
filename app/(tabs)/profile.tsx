@@ -7,6 +7,7 @@ import {
 	TextInput,
 	Image,
 	TouchableOpacity,
+	Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -19,13 +20,21 @@ import { Colors } from "@/constants/Colors";
 import { useFilters } from "@/contexts/FilterContext";
 import { sampleRecipes } from "@/models/sampleData";
 import { getFilterOptions } from "@/models/recipeUtils";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
-	const { preferences, setUnitType, addAllergy, removeAllergy, setIsVegan } =
-		useUserPreferences();
-	const { syncAllergies } = useFilters();
+	const {
+		preferences,
+		setUnitType,
+		addAllergy,
+		removeAllergy,
+		setIsVegan,
+		resetPreferences,
+	} = useUserPreferences();
+	const { syncAllergies, clearFilters } = useFilters();
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
+	const router = useRouter();
 
 	const textColor = Colors[colorScheme].text;
 	// const borderColor = isDark ? "#333" : "#eee";
@@ -67,6 +76,33 @@ export default function ProfileScreen() {
 		syncAllergies();
 	};
 
+	const handleResetDemo = () => {
+		Alert.alert(
+			"Reset Demo",
+			"This will reset all your preferences and remove your profile. Are you sure?",
+			[
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+				{
+					text: "Reset",
+					style: "destructive",
+					onPress: () => {
+						// Reset preferences
+						resetPreferences();
+
+						// Clear filters
+						clearFilters();
+
+						// Navigate back to sign-in
+						router.replace("/auth/sign-in");
+					},
+				},
+			],
+		);
+	};
+
 	return (
 		<SafeAreaView style={styles.safeArea} edges={["top"]}>
 			<ThemedView
@@ -75,6 +111,45 @@ export default function ProfileScreen() {
 				darkColor="#151718"
 			>
 				<ScrollView style={styles.settingsContainer}>
+					{/* Guest mode section - only show for guest users */}
+					{!preferences.userName && (
+						<View style={styles.section}>
+							<ThemedText style={styles.sectionTitle}>Guest Mode</ThemedText>
+							<ThemedText style={styles.settingDescription}>
+								You're currently using Vegify as a guest. Create an account to
+								submit reviews and save your preferences.
+							</ThemedText>
+							<TouchableOpacity
+								style={styles.createAccountButton}
+								onPress={() =>
+									router.push({
+										pathname: "/auth/create-profile",
+										params: {
+											isGuest: "false",
+											fromGuestMode: "true",
+										},
+									})
+								}
+							>
+								<ThemedText style={styles.createAccountButtonText}>
+									Create Account
+								</ThemedText>
+							</TouchableOpacity>
+						</View>
+					)}
+
+					{/* User account section - only show for logged in users */}
+					{preferences.userName && (
+						<View style={styles.section}>
+							<ThemedText style={styles.sectionTitle}>Your Account</ThemedText>
+							<ThemedText style={styles.settingLabel}>
+								Welcome, {preferences.userName}!
+							</ThemedText>
+							<ThemedText style={styles.settingDescription}>
+								You can submit reviews and save your favorite recipes.
+							</ThemedText>
+						</View>
+					)}
 					<View style={styles.section}>
 						<ThemedText style={styles.sectionTitle}>
 							Unit Preferences
@@ -120,60 +195,10 @@ export default function ProfileScreen() {
 					</View>
 
 					<View style={styles.section}>
-						<ThemedText style={styles.sectionTitle}>Allergies</ThemedText>
-						<ThemedText style={styles.settingDescription}>
-							Add ingredients you're allergic to. Recipes containing these will
-							be filtered out automatically.
-						</ThemedText>
-
-						<View style={styles.inputContainer}>
-							<TextInput
-								style={[
-									styles.input,
-									{
-										backgroundColor: inputBackgroundColor,
-										borderColor: inputBorderColor,
-										color: textColor,
-									},
-								]}
-								value={newAllergy}
-								onChangeText={setNewAllergy}
-								placeholder="Add allergy (e.g., peanuts)"
-								placeholderTextColor={placeholderColor}
-								returnKeyType="done"
-								onSubmitEditing={handleAddAllergy}
-							/>
-							<TouchableOpacity
-								style={styles.addButton}
-								onPress={handleAddAllergy}
-							>
-								<IconSymbol name="plus" size={24} color="#fff" />
-							</TouchableOpacity>
-						</View>
-
-						<View style={styles.chipContainer}>
-							{preferences.allergies.map((allergy) => (
-								<FilterChip
-									key={allergy}
-									label={allergy}
-									selected={true}
-									onPress={() => handleRemoveAllergy(allergy)}
-									showIcon={true}
-								/>
-							))}
-							{preferences.allergies.length === 0 && (
-								<ThemedText style={styles.emptyText}>
-									No allergies added yet
-								</ThemedText>
-							)}
-						</View>
-
 						{/* Common allergens section */}
 						{commonAllergens.length > 0 && (
 							<>
-								<ThemedText style={styles.subsectionTitle}>
-									Common Allergens
-								</ThemedText>
+								<ThemedText style={styles.sectionTitle}>Allergens</ThemedText>
 								<ThemedText style={styles.settingDescription}>
 									Tap to add or remove from your allergies.
 								</ThemedText>
@@ -193,14 +218,23 @@ export default function ProfileScreen() {
 						)}
 					</View>
 
+					{/* Reset Demo section */}
 					<View style={styles.section}>
-						<ThemedText style={styles.sectionTitle}>About</ThemedText>
+						<ThemedText style={styles.sectionTitle}>Demo Controls</ThemedText>
 						<ThemedText style={styles.settingDescription}>
-							Vegify v1.0.0
+							Reset the demo to start over with a fresh profile.
 						</ThemedText>
-						<ThemedText style={styles.settingDescription}>
-							The ultimate plant-based recipe app
-						</ThemedText>
+						<TouchableOpacity
+							style={styles.resetButton}
+							onPress={handleResetDemo}
+						>
+							<IconSymbol
+								name="arrow.counterclockwise"
+								size={18}
+								color="#fff"
+							/>
+							<ThemedText style={styles.resetButtonText}>Reset Demo</ThemedText>
+						</TouchableOpacity>
 					</View>
 
 					<Image
@@ -209,7 +243,7 @@ export default function ProfileScreen() {
 							height: 30,
 							width: 100,
 							alignSelf: "center",
-							marginTop: 400,
+							marginTop: 120,
 						}}
 					/>
 				</ScrollView>
@@ -293,5 +327,32 @@ const styles = StyleSheet.create({
 	emptyText: {
 		fontSize: 14,
 		fontStyle: "italic",
+	},
+	createAccountButton: {
+		backgroundColor: "#4CAF50",
+		paddingVertical: 12,
+		borderRadius: 8,
+		alignItems: "center",
+		marginTop: 16,
+	},
+	createAccountButtonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "500",
+	},
+	resetButton: {
+		backgroundColor: "#FF6B6B",
+		paddingVertical: 12,
+		borderRadius: 8,
+		alignItems: "center",
+		marginTop: 16,
+		flexDirection: "row",
+		justifyContent: "center",
+	},
+	resetButtonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "500",
+		marginLeft: 8,
 	},
 });

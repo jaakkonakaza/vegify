@@ -1310,7 +1310,7 @@ export const sampleRecipes: Recipe[] =
 			vegan: true,
 			vegetarian: true,
 			mealTime: ["snack"],
-			cuisineType: ["Vegan"],
+			cuisineType: ["Fusion"],
 			dishType: ["spread"],
 			allergens: ["Nuts"],
 			nutritionalInfo: {
@@ -1691,7 +1691,7 @@ export const sampleRecipes: Recipe[] =
 			vegan: true,
 			vegetarian: true,
 			mealTime: ["dinner"],
-			cuisineType: ["Vegetarian"],
+			cuisineType: ["Fusion"],
 			dishType: ["patties", "veggie burger"],
 			allergens: ["Carrot"],
 			nutritionalInfo: {

@@ -461,7 +461,7 @@ export function FilterModal({
 											? " allergies"
 											: preferences.isVegan
 												? " vegan diet"
-												: "filters"}
+												: " filters"}
 							</Text>
 						</View>
 
