@@ -115,9 +115,11 @@ export default function ProfileScreen() {
 				},
 				{
 					text: "Reset",
+					style: "destructive",
 					onPress: () => {
 						resetPreferences();
 						clearFilters();
+						router.replace("/auth/sign-in");
 					},
 				},
 			],

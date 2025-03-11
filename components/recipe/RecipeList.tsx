@@ -8,7 +8,6 @@ import { FilterModal } from "@/components/recipe/FilterModal";
 import { filterRecipes, getFilterOptions } from "@/models/recipeUtils";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useFilters } from "@/contexts/FilterContext";
 import { IconSymbol } from "@/components/ui/IconSymbol";

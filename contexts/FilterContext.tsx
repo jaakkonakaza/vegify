@@ -63,7 +63,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 			newFilters.allergens = [...preferences.allergies];
 		}
 
-		console.log("excludedIngredients", preferences.excludedIngredients);
 		// Add excluded ingredients if any
 		if (preferences.excludedIngredients.length > 0) {
 			newFilters.excludeIngredients = [...preferences.excludedIngredients];

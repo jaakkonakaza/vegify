@@ -10,10 +10,6 @@ import {
 	SafeAreaView,
 	KeyboardAvoidingView,
 	Platform,
-	TextInputSubmitEditingEventData,
-	NativeSyntheticEvent,
-	Keyboard,
-	TouchableWithoutFeedback,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { FilterChip } from "@/components/recipe/FilterChip";
@@ -125,7 +121,7 @@ export function FilterModal({
 	);
 	const { preferences } = useUserPreferences();
 	const scrollViewRef = useRef<ScrollView>(null);
-	const { searchQuery, recipeFavorites, setSearchQuery } = useFilters();
+	const { recipeFavorites } = useFilters();
 
 	// Get the current color scheme
 	const colorScheme = useColorScheme() ?? "light";

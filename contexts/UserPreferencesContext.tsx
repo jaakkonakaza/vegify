@@ -4,6 +4,7 @@ import React, {
 	useState,
 	useEffect,
 	type ReactNode,
+	useRef,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { UserPreferences } from "@/models/UserPreferences";
@@ -42,6 +43,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 	);
 	const [reviews, setReviews] = useState<Record<string, Review[]>>({});
 	const [isLoaded, setIsLoaded] = useState(false);
+	const isInitialLoadRef = useRef(true);
 
 	// Load preferences and reviews from storage on mount
 	useEffect(() => {
@@ -51,10 +53,10 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				const storedReviews = await AsyncStorage.getItem(REVIEWS_STORAGE_KEY);
 
 				if (storedPreferences) {
-					setPreferences({
-						...preferences,
+					setPreferences((prevPreferences) => ({
+						...prevPreferences,
 						...JSON.parse(storedPreferences),
-					});
+					}));
 				}
 
 				if (storedReviews) {
@@ -71,6 +73,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				console.error("Failed to load data:", error);
 			} finally {
 				setIsLoaded(true);
+				isInitialLoadRef.current = false;
 			}
 		};
 
@@ -79,9 +82,10 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 
 	// Save preferences to storage whenever they change
 	useEffect(() => {
-		const savePreferences = async () => {
-			if (!isLoaded) return; // Don't save until initial load is complete
+		// Skip if we're still in the initial loading phase
+		if (isInitialLoadRef.current) return;
 
+		const savePreferences = async () => {
 			try {
 				await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
 			} catch (error) {
@@ -90,7 +94,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		};
 
 		savePreferences();
-	}, [preferences, isLoaded]);
+	}, [preferences]);
 
 	// Save reviews to storage whenever they change
 	useEffect(() => {

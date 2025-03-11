@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import {
 	StyleSheet,
 	Image,
@@ -7,26 +6,15 @@ import {
 	View,
 	Text,
 	type GestureResponderEvent,
-	type StyleProp,
-	type TextStyle,
 } from "react-native";
 import { useRouter } from "expo-router";
 import type { Recipe } from "@/models/Recipe";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { Colors } from "@/constants/Colors";
 import { getRecipeImage } from "@/utils/recipeUtils";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useFilters } from "@/contexts/FilterContext";
-
-// Component to highlight search terms in text
-interface HighlightedTextProps {
-	text: string;
-	searchTerm?: string;
-	style?: StyleProp<TextStyle>;
-	highlightStyle?: StyleProp<TextStyle>;
-}
 
 interface RecipeCardProps {
 	recipe: Recipe;
@@ -37,7 +25,6 @@ export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 	const router = useRouter();
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
-	const textColor = Colors[colorScheme].text;
 	const subtextColor = isDark ? "#9BA1A6" : "#666";
 	const cardBackgroundColor = isDark ? "#1E1E1E" : "white";
 	const cardBorderColor = isDark ? "#2A2A2A" : "#E0E0E0";
@@ -235,9 +222,5 @@ const styles = StyleSheet.create({
 	reviews: {
 		fontSize: 12,
 		color: "#666",
-	},
-	highlightedText: {
-		backgroundColor: "rgba(255, 215, 0, 0.3)",
-		fontWeight: "bold",
 	},
 });
