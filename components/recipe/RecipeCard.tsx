@@ -39,6 +39,7 @@ export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 	const textColor = Colors[colorScheme].text;
 	const subtextColor = isDark ? "#9BA1A6" : "#666";
 	const cardBackgroundColor = isDark ? "#1E1E1E" : "white";
+	const cardBorderColor = isDark ? "#2A2A2A" : "#E0E0E0";
 	const { isFavorite, toggleFavorite } = useUserPreferences();
 	const [randomLikes] = useState(Math.floor(Math.random() * 96) + 5);
 
@@ -89,7 +90,10 @@ export function RecipeCard({ recipe, searchTerm }: RecipeCardProps) {
 
 	return (
 		<TouchableOpacity
-			style={[styles.card, { backgroundColor: cardBackgroundColor }]}
+			style={[
+				styles.card,
+				{ backgroundColor: cardBackgroundColor, borderColor: cardBorderColor },
+			]}
 			onPress={handlePress}
 			activeOpacity={0.8}
 		>
