@@ -125,7 +125,7 @@ export default function CreateProfileScreen() {
 		}
 
 		// Navigate to the main app
-		router.replace("/(tabs)");
+		router.dismissTo("/(tabs)");
 	};
 
 	return (
@@ -263,6 +263,7 @@ export default function CreateProfileScreen() {
 									returnKeyType="done"
 									onSubmitEditing={handleAddAllergy}
 									editable={false}
+									numberOfLines={1}
 								/>
 								<TouchableOpacity
 									style={styles.addButton}
@@ -341,10 +342,18 @@ const styles = StyleSheet.create({
 	logoContainer: {
 		alignItems: "center",
 		marginBottom: 24,
+		backgroundColor: "#4A732F",
+		marginHorizontal: -16,
+		marginTop: -16,
 	},
 	logo: {
 		width: 60,
 		height: 60,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 1,
+		elevation: 5,
 	},
 	appName: {
 		fontSize: 28,

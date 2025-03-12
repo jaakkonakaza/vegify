@@ -19,6 +19,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ReviewsScreen() {
 	const router = useRouter();
@@ -110,6 +111,43 @@ export default function ReviewsScreen() {
 		}, 500);
 	};
 
+	// Format date to a more user-friendly format
+	const formatDate = (dateString: string) => {
+		try {
+			const date = new Date(dateString);
+
+			// Check if date is valid
+			if (Number.isNaN(date.getTime())) {
+				return dateString;
+			}
+
+			// Get today and yesterday for relative date formatting
+			const today = new Date();
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+
+			// Format as "Today" or "Yesterday" if applicable
+			if (date.toDateString() === today.toDateString()) {
+				return "Today";
+			}
+
+			if (date.toDateString() === yesterday.toDateString()) {
+				return "Yesterday";
+			}
+
+			// Format as "Month Day, Year" for older dates
+			const options: Intl.DateTimeFormatOptions = {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			};
+			return date.toLocaleDateString(undefined, options);
+		} catch (error) {
+			// Fallback to original string if there's an error
+			return dateString;
+		}
+	};
+
 	const renderStars = (rating: number) => {
 		const stars = [];
 		const fullStars = Math.floor(rating);
@@ -164,7 +202,7 @@ export default function ReviewsScreen() {
 			<View style={styles.reviewHeader}>
 				<ThemedText style={styles.reviewerName}>{item.userName}</ThemedText>
 				<Text style={[styles.reviewDate, { color: subtextColor }]}>
-					{item.date}
+					{formatDate(item.date)}
 				</Text>
 			</View>
 			<View style={styles.reviewRating}>{renderStars(item.rating)}</View>
@@ -211,6 +249,7 @@ export default function ReviewsScreen() {
 			<ScrollView
 				showsVerticalScrollIndicator={false}
 				keyboardDismissMode="on-drag"
+				contentContainerStyle={styles.scrollContent}
 			>
 				<ThemedText style={styles.writeReviewTitle}>Write a Review</ThemedText>
 				<ThemedText style={styles.writeReviewSubtitle}>
@@ -224,7 +263,15 @@ export default function ReviewsScreen() {
 						</ThemedText>
 						<TouchableOpacity
 							style={guestStyles.createAccountButton}
-							onPress={() => router.push("/auth/sign-in")}
+							onPress={() =>
+								router.dismissTo({
+									pathname: "/auth/create-profile",
+									params: {
+										isGuest: "false",
+										fromGuestMode: "true",
+									},
+								})
+							}
 						>
 							<ThemedText style={guestStyles.createAccountButtonText}>
 								Create Account
@@ -280,58 +327,63 @@ export default function ReviewsScreen() {
 	);
 
 	return (
-		<ThemedView style={styles.container}>
-			<View style={[styles.tabBar, { borderBottomColor: borderColor }]}>
-				<TouchableOpacity
-					style={[styles.tab, activeTab === "read" && styles.activeTab]}
-					onPress={() => setActiveTab("read")}
-				>
-					<Text
-						style={[
-							styles.tabText,
-							{
-								color: isDark
-									? activeTab === "read"
-										? "#81C784"
-										: "#9BA1A6"
-									: activeTab === "read"
-										? "#4CAF50"
-										: "#666",
-							},
-						]}
+		<SafeAreaView style={styles.safeArea} edges={["bottom"]}>
+			<ThemedView style={styles.container}>
+				<View style={[styles.tabBar, { borderBottomColor: borderColor }]}>
+					<TouchableOpacity
+						style={[styles.tab, activeTab === "read" && styles.activeTab]}
+						onPress={() => setActiveTab("read")}
 					>
-						Read Reviews
-					</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={[styles.tab, activeTab === "write" && styles.activeTab]}
-					onPress={() => setActiveTab("write")}
-				>
-					<Text
-						style={[
-							styles.tabText,
-							{
-								color: isDark
-									? activeTab === "write"
-										? "#81C784"
-										: "#9BA1A6"
-									: activeTab === "write"
-										? "#4CAF50"
-										: "#666",
-							},
-						]}
+						<Text
+							style={[
+								styles.tabText,
+								{
+									color: isDark
+										? activeTab === "read"
+											? "#81C784"
+											: "#9BA1A6"
+										: activeTab === "read"
+											? "#4CAF50"
+											: "#666",
+								},
+							]}
+						>
+							Read Reviews
+						</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						style={[styles.tab, activeTab === "write" && styles.activeTab]}
+						onPress={() => setActiveTab("write")}
 					>
-						Write a Review
-					</Text>
-				</TouchableOpacity>
-			</View>
+						<Text
+							style={[
+								styles.tabText,
+								{
+									color: isDark
+										? activeTab === "write"
+											? "#81C784"
+											: "#9BA1A6"
+										: activeTab === "write"
+											? "#4CAF50"
+											: "#666",
+								},
+							]}
+						>
+							Write a Review
+						</Text>
+					</TouchableOpacity>
+				</View>
 
-			{activeTab === "read" ? renderReadTab() : renderWriteTab()}
-		</ThemedView>
+				{activeTab === "read" ? renderReadTab() : renderWriteTab()}
+			</ThemedView>
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
+	safeArea: {
+		flex: 1,
+	},
 	container: {
 		flex: 1,
 	},
@@ -363,13 +415,16 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 16,
 	},
+	scrollContent: {
+		paddingBottom: 32,
+	},
 	reviewsTitle: {
 		fontSize: 20,
 		fontWeight: "bold",
 		marginBottom: 16,
 	},
 	reviewsList: {
-		paddingBottom: 16,
+		paddingBottom: 32,
 	},
 	reviewItem: {
 		marginBottom: 16,
