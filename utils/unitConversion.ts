@@ -7,6 +7,7 @@ type ConversionEntry = { to: string; factor: number };
 const volumeConversions: Record<string, ConversionEntry> = {
 	// Metric to Imperial
 	ml: { to: "fl oz", factor: 0.033814 },
+	dl: { to: "fl oz", factor: 3.3814 },
 	l: { to: "qt", factor: 1.05669 },
 	// Imperial to Metric
 	"fl oz": { to: "ml", factor: 29.5735 },
@@ -180,10 +181,37 @@ export function convertUnit(
 		);
 	}
 
-	// Format the result
+	// Format the result with more readable units
+	let formattedQuantity = convertedQuantity;
+	let finalUnit = targetUnit;
+
+	// Make metric units more readable
+	if (normalizedToUnit === "ml" && convertedQuantity >= 100) {
+		// Convert to deciliters if the value is large enough
+		formattedQuantity = convertedQuantity / 100;
+		finalUnit = "dl";
+	} else if (normalizedToUnit === "g" && convertedQuantity >= 1000) {
+		// Convert to kilograms if the value is large enough
+		formattedQuantity = convertedQuantity / 1000;
+		finalUnit = "kg";
+	}
+
+	// Round to appropriate precision based on the value
+	let quantityStr: string;
+	if (formattedQuantity < 1) {
+		// For small values, keep more precision
+		quantityStr = formattedQuantity.toFixed(1).replace(/\.0$/, "");
+	} else if (formattedQuantity < 10) {
+		// For medium values, use 1 decimal place
+		quantityStr = formattedQuantity.toFixed(1).replace(/\.0$/, "");
+	} else {
+		// For large values, round to whole numbers
+		quantityStr = Math.round(formattedQuantity).toString();
+	}
+
 	return {
-		quantity: convertedQuantity.toFixed(2).replace(/\.00$/, ""),
-		unit: targetUnit,
+		quantity: quantityStr,
+		unit: finalUnit,
 	};
 }
 
