@@ -55,7 +55,7 @@ importers:
         version: 7.1.0-canary-20250306-d9d3e02(expo@53.0.0-canary-20250306-d9d3e02(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@expo/metro-runtime@4.0.2-canary-20250306-d9d3e02(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0)))(babel-plugin-react-compiler@19.0.0-beta-40c6c23-20250301)(react-compiler-runtime@19.0.0-beta-40c6c23-20250301(react@19.0.0))(react-native-webview@13.13.2(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
       expo-router:
         specifier: 4.0.18-canary-20250306-d9d3e02
-        version: 4.0.18-canary-20250306-d9d3e02(e2ee66da81127fbb2c7b9ca8b7df411d)
+        version: 4.0.18-canary-20250306-d9d3e02(f2a383fd403ccdb8d4053e29275234af)
       expo-sharing:
         specifier: 13.0.2-canary-20250306-d9d3e02
         version: 13.0.2-canary-20250306-d9d3e02(expo@53.0.0-canary-20250306-d9d3e02(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@expo/metro-runtime@4.0.2-canary-20250306-d9d3e02(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0)))(babel-plugin-react-compiler@19.0.0-beta-40c6c23-20250301)(react-compiler-runtime@19.0.0-beta-40c6c23-20250301(react@19.0.0))(react-native-webview@13.13.2(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0))
@@ -96,8 +96,8 @@ importers:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))
       react-native-reanimated:
-        specifier: ~3.17.1
-        version: 3.17.1(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
+        specifier: 4.0.0-beta.2
+        version: 4.0.0-beta.2(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
       react-native-safe-area-context:
         specifier: 5.2.0
         version: 5.2.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
@@ -3970,8 +3970,8 @@ packages:
       react: '>=18.2.0'
       react-native: '>=0.73.0'
 
-  react-native-reanimated@3.17.1:
-    resolution: {integrity: sha512-ECzLhLxMKLifv34a8799/MHqIazQZV9fLMNSMdixXQlzX71RyL3/ah3cz/h3ERoyhJAYRC2ySLLZho6pXSqMFQ==}
+  react-native-reanimated@4.0.0-beta.2:
+    resolution: {integrity: sha512-2dugFWc2CmNeymk1q7UFwArCUc5si8mo/Rjcik0+zXkvmL+d2EQ2Nplymd9qijNWXK0J5SDjG+93cpxRx+2gKg==}
     peerDependencies:
       '@babel/core': ^7.0.0-0
       react: '*'
@@ -8075,7 +8075,7 @@ snapshots:
     dependencies:
       invariant: 2.2.4
 
-  expo-router@4.0.18-canary-20250306-d9d3e02(e2ee66da81127fbb2c7b9ca8b7df411d):
+  expo-router@4.0.18-canary-20250306-d9d3e02(f2a383fd403ccdb8d4053e29275234af):
     dependencies:
       '@expo/metro-runtime': 4.0.2-canary-20250306-d9d3e02(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))
       '@expo/server': 0.5.2-canary-20250306-d9d3e02
@@ -8096,7 +8096,7 @@ snapshots:
       semver: 7.6.3
       server-only: 0.0.1
     optionalDependencies:
-      react-native-reanimated: 3.17.1(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
+      react-native-reanimated: 4.0.0-beta.2(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
     transitivePeerDependencies:
       - '@react-native-masked-view/masked-view'
       - react
@@ -9977,7 +9977,7 @@ snapshots:
       react: 19.0.0
       react-native: 0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0)
 
-  react-native-reanimated@3.17.1(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0):
+  react-native-reanimated@4.0.0-beta.2(@babel/core@7.26.9)(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0):
     dependencies:
       '@babel/core': 7.26.9
       '@babel/plugin-transform-arrow-functions': 7.25.9(@babel/core@7.26.9)
@@ -9993,7 +9993,6 @@ snapshots:
       invariant: 2.2.4
       react: 19.0.0
       react-native: 0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0)
-      react-native-is-edge-to-edge: 1.1.6(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.3.18)(react@19.0.0))(react@19.0.0)
     transitivePeerDependencies:
       - supports-color
 
