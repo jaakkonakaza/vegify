@@ -22,12 +22,18 @@ interface UserPreferencesContextType {
 	removeExcludedIngredient: (ingredient: string) => void;
 	toggleFavorite: (recipeId: string) => void;
 	isFavorite: (recipeId: string) => boolean;
-	addReview: (recipeId: string, rating: number, comment: string) => void;
+	addReview: (
+		recipeId: string,
+		rating: number,
+		comment: string,
+		status?: "approved" | "pending_review",
+	) => void;
 	getRecipeReviews: (recipeId: string) => Review[];
 	getAverageRating: (recipeId: string) => number;
 	setIsVegan: (isVegan: boolean) => void;
 	setUserName: (userName: string) => void;
 	resetPreferences: () => void;
+	toggleNutritionalInfo: () => void;
 }
 
 const UserPreferencesContext = createContext<
@@ -226,6 +232,13 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		setReviews({});
 	};
 
+	const toggleNutritionalInfo = () => {
+		setPreferences((prev) => ({
+			...prev,
+			showNutritionalInfo: !prev.showNutritionalInfo,
+		}));
+	};
+
 	return (
 		<UserPreferencesContext.Provider
 			value={{
@@ -243,6 +256,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 				setIsVegan,
 				setUserName,
 				resetPreferences,
+				toggleNutritionalInfo,
 			}}
 		>
 			{children}
