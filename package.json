@@ -24,7 +24,7 @@
 		"@types/uuid": "^10.0.0",
 		"babel-plugin-react-compiler": "19.0.0-beta-40c6c23-20250301",
 		"eslint-plugin-react-compiler": "19.0.0-beta-40c6c23-20250301",
-		"expo": "53.0.0-canary-20250306-d9d3e02",
+		"expo": "53.0.0-canary-20250403-13261ac",
 		"expo-blur": "14.0.4-canary-20250306-d9d3e02",
 		"expo-constants": "18.0.0-canary-20250306-d9d3e02",
 		"expo-dev-client": "5.0.13-canary-20250306-d9d3e02",
