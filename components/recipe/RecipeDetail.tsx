@@ -6,6 +6,7 @@ import {
 	TouchableOpacity,
 	Share,
 	Alert,
+	TextInput,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useRouter } from "expo-router";
@@ -40,6 +41,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	} = useUserPreferences();
 	const favorite = isFavorite(recipe.id);
 	const [servingSize, setServingSize] = useState(recipe.servingSize);
+	const [isEditing, setIsEditing] = useState(false);
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
 
@@ -121,6 +123,26 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	const decreaseServings = () => {
 		if (servingSize > 1) {
 			setServingSize((prev) => prev - 1);
+		}
+	};
+
+	const handleServingSizeChange = (text: string) => {
+		if (text === "") {
+			setServingSize(0);
+			return;
+		}
+		const newSize = Number.parseInt(text, 10);
+		if (!Number.isNaN(newSize) && newSize >= 1 && newSize <= 99) {
+			setServingSize(newSize);
+		}
+	};
+
+	const handleServingSizeBlur = () => {
+		setIsEditing(false);
+		if (servingSize < 1) {
+			setServingSize(1);
+		} else if (servingSize > 99) {
+			setServingSize(99);
 		}
 	};
 
@@ -397,18 +419,37 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 									color={servingSize <= 1 ? "#ccc" : "#4CAF50"}
 								/>
 							</TouchableOpacity>
-							<ThemedText style={styles.servingSizeValue}>
-								{servingSize}
-							</ThemedText>
+
+							<TextInput
+								style={[
+									styles.servingSizeValue,
+									{
+										color: textColor,
+										backgroundColor: isDark ? "#333" : "#f0f0f0",
+									},
+								]}
+								value={servingSize.toString()}
+								onChangeText={handleServingSizeChange}
+								onBlur={handleServingSizeBlur}
+								keyboardType="number-pad"
+								maxLength={2}
+								selectTextOnFocus
+							/>
+
 							<TouchableOpacity
 								style={[
 									styles.servingSizeButton,
 									{ backgroundColor: isDark ? "#333" : "#f0f0f0" },
 								]}
 								onPress={increaseServings}
+								disabled={servingSize >= 99}
 								hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 							>
-								<IconSymbol name="plus" size={18} color="#4CAF50" />
+								<IconSymbol
+									name="plus"
+									size={18}
+									color={servingSize >= 99 ? "#ccc" : "#4CAF50"}
+								/>
 							</TouchableOpacity>
 						</View>
 					</View>
@@ -620,12 +661,16 @@ const styles = StyleSheet.create({
 		borderRadius: 14,
 	},
 	servingSizeValue: {
+		width: 30,
+		justifyContent: "center",
+		alignItems: "center",
+		textAlign: "center",
+		borderRadius: 100,
+		marginHorizontal: 8,
 		fontSize: 16,
 		fontWeight: "bold",
-		marginHorizontal: 8,
-		minWidth: 20,
-		textAlign: "center",
 	},
+
 	unitTypeInfo: {
 		fontSize: 12,
 		marginBottom: 12,
