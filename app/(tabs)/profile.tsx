@@ -295,9 +295,11 @@ export default function ProfileScreen() {
 
 					{/* Reset Demo section */}
 					<View style={styles.section}>
-						<ThemedText style={styles.sectionTitle}>Demo Controls</ThemedText>
+						<ThemedText style={styles.sectionTitle}>
+							Account Management
+						</ThemedText>
 						<ThemedText style={styles.settingDescription}>
-							Reset the demo to start over with a fresh profile.
+							Remove your account and all associated data.
 						</ThemedText>
 						<TouchableOpacity
 							style={styles.resetButton}
@@ -308,7 +310,9 @@ export default function ProfileScreen() {
 								size={18}
 								color="#fff"
 							/>
-							<ThemedText style={styles.resetButtonText}>Reset Demo</ThemedText>
+							<ThemedText style={styles.resetButtonText}>
+								Remove Account
+							</ThemedText>
 						</TouchableOpacity>
 					</View>
 
