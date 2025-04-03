@@ -22,6 +22,7 @@ const MAPPING = {
 	shuffle: "shuffle",
 	clock: "access-time",
 	sparkles: "lightbulb",
+	"flag.fill": "flag",
 	// Added mappings for Ionicons
 	"star.fill": "star",
 	star: "star-outline",

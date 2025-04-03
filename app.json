@@ -2,7 +2,7 @@
 	"expo": {
 		"name": "Vegify",
 		"slug": "vegify",
-		"version": "3",
+		"version": "4",
 		"orientation": "portrait",
 		"icon": "./assets/images/icon.png",
 		"scheme": "myapp",

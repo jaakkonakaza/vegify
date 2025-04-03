@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
 	StyleSheet,
 	View,
@@ -35,13 +35,11 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	const { getRecipeReviews, preferences, toggleNutritionalInfo } =
 		useUserPreferences();
 	const [servingSize, setServingSize] = useState(recipe.servingSize);
-	const [isEditing, setIsEditing] = useState(false);
 	const colorScheme = useColorScheme() ?? "light";
 	const isDark = colorScheme === "dark";
 
 	const textColor = Colors[colorScheme].text;
 	const subtextColor = isDark ? "#9BA1A6" : "#666";
-	const iconColor = isDark ? textColor : "black";
 	const buttonBgColor = isDark ? "#2A2A2A" : "white";
 
 	const reviews = getRecipeReviews(recipe.id);
@@ -132,7 +130,6 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	};
 
 	const handleServingSizeBlur = () => {
-		setIsEditing(false);
 		if (servingSize < 1) {
 			setServingSize(1);
 		} else if (servingSize > 99) {

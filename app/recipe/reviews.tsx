@@ -21,7 +21,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { containsProfanity, getProfanityList } from "@/utils/profanityFilter";
+import { containsProfanity } from "@/utils/profanityFilter";
 
 export default function ReviewsScreen() {
 	const router = useRouter();
