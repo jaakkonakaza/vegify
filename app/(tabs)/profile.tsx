@@ -139,8 +139,12 @@ export default function ProfileScreen() {
 						<View style={styles.section}>
 							<ThemedText style={styles.sectionTitle}>Guest Mode</ThemedText>
 							<ThemedText style={styles.settingDescription}>
-								You're currently using Vegify as a guest. Create an account to
-								submit reviews and save your preferences.
+								You're currently using Vegify with a temporary profile. Your
+								preferences are saved locally on this device.
+							</ThemedText>
+							<ThemedText style={styles.settingDescription}>
+								To submit reviews and access all features, create a permanent
+								account.
 							</ThemedText>
 							<TouchableOpacity
 								style={styles.createAccountButton}

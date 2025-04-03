@@ -70,6 +70,10 @@ export default function SignInScreen() {
 								<Text style={styles.buttonText}>Continue as Guest</Text>
 							</TouchableOpacity>
 						</Link>
+						<ThemedText style={styles.guestDescription}>
+							Create a temporary profile to try Vegify. Your preferences will be
+							saved locally.
+						</ThemedText>
 					</View>
 
 					<View style={styles.termsContainer}>
@@ -192,5 +196,13 @@ const styles = StyleSheet.create({
 	footerLogo: {
 		width: "100%",
 		aspectRatio: 16 / 9,
+	},
+	guestDescription: {
+		fontSize: 14,
+		textAlign: "center",
+		opacity: 0.7,
+		color: "#fff",
+		marginTop: 8,
+		marginBottom: 24,
 	},
 });

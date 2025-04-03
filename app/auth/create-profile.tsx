@@ -151,6 +151,15 @@ export default function CreateProfileScreen() {
 								style={styles.logo}
 								resizeMode="contain"
 							/>
+							{isGuest ? (
+								<ThemedText style={styles.profileType}>
+									Creating Temporary Profile
+								</ThemedText>
+							) : (
+								<ThemedText style={styles.profileType}>
+									Creating Account
+								</ThemedText>
+							)}
 						</View>
 
 						{!isGuest && (
@@ -457,5 +466,11 @@ const styles = StyleSheet.create({
 	},
 	keyboardSpacer: {
 		height: Platform.OS === "ios" ? 120 : 80,
+	},
+	profileType: {
+		fontSize: 16,
+		fontWeight: "400",
+		margin: 8,
+		color: "#fff",
 	},
 });
