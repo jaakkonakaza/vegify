@@ -124,6 +124,7 @@ function generateRandomReview(recipeId: string, baseRating?: number): Review {
 		rating,
 		comment: getRandomComment(rating),
 		date: getRandomRecentDate(),
+		status: "approved", // All generated reviews are approved by default
 	};
 }
 

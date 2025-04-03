@@ -7,6 +7,7 @@ export interface UserPreferences {
 	favoriteRecipes: string[]; // Array of recipe IDs
 	isVegan: boolean; // Whether the user is vegan
 	userName?: string; // Optional user name for non-guest users
+	showNutritionalInfo: boolean; // Whether to show nutritional info by default
 }
 
 export const defaultUserPreferences: UserPreferences = {
@@ -16,4 +17,5 @@ export const defaultUserPreferences: UserPreferences = {
 	favoriteRecipes: [],
 	isVegan: false,
 	userName: undefined,
+	showNutritionalInfo: false, // Collapsed by default
 };

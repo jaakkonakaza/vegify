@@ -26,7 +26,7 @@ const greenTheme = {
 };
 
 export default function TabLayout() {
-	const colorScheme = useColorScheme();
+	const colorScheme = useColorScheme() ?? "light";
 	const { clearFilters } = useFilters();
 
 	return (
@@ -58,6 +58,15 @@ export default function TabLayout() {
 					tabLongPress: (e) => {
 						clearFilters();
 					},
+				}}
+			/>
+			<Tabs.Screen
+				name="discover"
+				options={{
+					title: "Discover",
+					tabBarIcon: ({ color }) => (
+						<IconSymbol size={28} name="sparkles" color={color} />
+					),
 				}}
 			/>
 			<Tabs.Screen

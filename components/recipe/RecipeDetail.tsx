@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
 	StyleSheet,
 	View,
@@ -6,7 +6,15 @@ import {
 	TouchableOpacity,
 	Share,
 	Alert,
+	Platform,
+	UIManager,
 } from "react-native";
+import Animated, {
+	useAnimatedStyle,
+	withTiming,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useRouter } from "expo-router";
 import type { Recipe } from "@/models/Recipe";
@@ -23,10 +31,22 @@ interface RecipeDetailProps {
 	recipe: Recipe;
 }
 
+// Enable LayoutAnimation for Android
+// if (Platform.OS === "android") {
+// 	if (UIManager.setLayoutAnimationEnabledExperimental) {
+// 		UIManager.setLayoutAnimationEnabledExperimental(true);
+// 	}
+// }
+
 export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	const router = useRouter();
-	const { toggleFavorite, isFavorite, getRecipeReviews, preferences } =
-		useUserPreferences();
+	const {
+		toggleFavorite,
+		isFavorite,
+		getRecipeReviews,
+		preferences,
+		toggleNutritionalInfo,
+	} = useUserPreferences();
 	const favorite = isFavorite(recipe.id);
 	const [servingSize, setServingSize] = useState(recipe.servingSize);
 	const colorScheme = useColorScheme() ?? "light";
@@ -38,6 +58,28 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	const buttonBgColor = isDark ? "#2A2A2A" : "white";
 
 	const reviews = getRecipeReviews(recipe.id);
+
+	const nutritionHeight = useSharedValue(
+		preferences.showNutritionalInfo ? 1 : 0,
+	);
+
+	const nutritionAnimatedStyle = useAnimatedStyle(() => {
+		return {
+			height: withSpring(nutritionHeight.value * 200, {
+				damping: 20,
+				stiffness: 200,
+				mass: 0.5,
+			}),
+			opacity: withTiming(nutritionHeight.value, {
+				duration: 200,
+			}),
+		};
+	});
+
+	const handleNutritionToggle = () => {
+		nutritionHeight.value = preferences.showNutritionalInfo ? 0 : 1;
+		toggleNutritionalInfo();
+	};
 
 	// Convert rating to stars
 	const renderStars = () => {
@@ -265,48 +307,67 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 				<ThemedText style={styles.description}>{recipe.description}</ThemedText>
 
 				<View style={styles.section}>
-					<ThemedText style={styles.sectionTitle}>
-						Nutritional information
-					</ThemedText>
-					<ThemedText style={styles.sectionDescription}>Per serving</ThemedText>
-					<View style={styles.nutritionItems}>
-						<View style={styles.nutritionItem}>
-							<ThemedText style={styles.nutritionValue}>
-								{recipe.nutritionalInfo.calories}
-							</ThemedText>
-							<ThemedText style={styles.nutritionLabel}>Calories</ThemedText>
+					<TouchableOpacity
+						style={styles.sectionHeader}
+						onPress={handleNutritionToggle}
+						activeOpacity={0.7}
+					>
+						<ThemedText style={styles.sectionTitle}>
+							Nutritional information
+						</ThemedText>
+						<IconSymbol
+							name={
+								preferences.showNutritionalInfo ? "chevron.up" : "chevron.down"
+							}
+							size={20}
+							color={subtextColor}
+						/>
+					</TouchableOpacity>
+					<Animated.View
+						style={[styles.nutritionContent, nutritionAnimatedStyle]}
+					>
+						<ThemedText style={styles.sectionDescription}>
+							Per serving
+						</ThemedText>
+						<View style={styles.nutritionItems}>
+							<View style={styles.nutritionItem}>
+								<ThemedText style={styles.nutritionValue}>
+									{recipe.nutritionalInfo.calories}
+								</ThemedText>
+								<ThemedText style={styles.nutritionLabel}>Calories</ThemedText>
+							</View>
+							<View style={styles.nutritionItem}>
+								<ThemedText style={styles.nutritionValue}>
+									{recipe.nutritionalInfo.fiber}g
+								</ThemedText>
+								<ThemedText style={styles.nutritionLabel}>Fiber</ThemedText>
+							</View>
+							{recipe.nutritionalInfo.protein && (
+								<View style={styles.nutritionItem}>
+									<ThemedText style={styles.nutritionValue}>
+										{recipe.nutritionalInfo.protein}g
+									</ThemedText>
+									<ThemedText style={styles.nutritionLabel}>Protein</ThemedText>
+								</View>
+							)}
+							{recipe.nutritionalInfo.carbs && (
+								<View style={styles.nutritionItem}>
+									<ThemedText style={styles.nutritionValue}>
+										{recipe.nutritionalInfo.carbs}g
+									</ThemedText>
+									<ThemedText style={styles.nutritionLabel}>Carbs</ThemedText>
+								</View>
+							)}
+							{recipe.nutritionalInfo.fat && (
+								<View style={styles.nutritionItem}>
+									<ThemedText style={styles.nutritionValue}>
+										{recipe.nutritionalInfo.fat}g
+									</ThemedText>
+									<ThemedText style={styles.nutritionLabel}>Fat</ThemedText>
+								</View>
+							)}
 						</View>
-						<View style={styles.nutritionItem}>
-							<ThemedText style={styles.nutritionValue}>
-								{recipe.nutritionalInfo.fiber}g
-							</ThemedText>
-							<ThemedText style={styles.nutritionLabel}>Fiber</ThemedText>
-						</View>
-						{recipe.nutritionalInfo.protein && (
-							<View style={styles.nutritionItem}>
-								<ThemedText style={styles.nutritionValue}>
-									{recipe.nutritionalInfo.protein}g
-								</ThemedText>
-								<ThemedText style={styles.nutritionLabel}>Protein</ThemedText>
-							</View>
-						)}
-						{recipe.nutritionalInfo.carbs && (
-							<View style={styles.nutritionItem}>
-								<ThemedText style={styles.nutritionValue}>
-									{recipe.nutritionalInfo.carbs}g
-								</ThemedText>
-								<ThemedText style={styles.nutritionLabel}>Carbs</ThemedText>
-							</View>
-						)}
-						{recipe.nutritionalInfo.fat && (
-							<View style={styles.nutritionItem}>
-								<ThemedText style={styles.nutritionValue}>
-									{recipe.nutritionalInfo.fat}g
-								</ThemedText>
-								<ThemedText style={styles.nutritionLabel}>Fat</ThemedText>
-							</View>
-						)}
-					</View>
+					</Animated.View>
 				</View>
 
 				<View style={styles.section}>
@@ -636,5 +697,8 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "600",
 		marginLeft: 8,
+	},
+	nutritionContent: {
+		overflow: "hidden",
 	},
 });
