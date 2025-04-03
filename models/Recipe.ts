@@ -37,6 +37,7 @@ export interface Review {
 	rating: number;
 	comment: string;
 	date: string;
+	status?: "approved" | "pending_review"; // Status of the review
 }
 
 export type MealTime = "breakfast" | "lunch" | "dinner" | "snack" | "dessert";

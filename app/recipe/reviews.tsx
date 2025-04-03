@@ -9,6 +9,7 @@ import {
 	FlatList,
 	KeyboardAvoidingView,
 	Platform,
+	Alert,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,6 +21,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { containsProfanity, getProfanityList } from "@/utils/profanityFilter";
 
 export default function ReviewsScreen() {
 	const router = useRouter();
@@ -43,6 +45,7 @@ export default function ReviewsScreen() {
 	const [newRating, setNewRating] = useState(5);
 	const [newComment, setNewComment] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [profanityError, setProfanityError] = useState<string | null>(null);
 
 	// Create component-specific styles
 	const guestStyles = StyleSheet.create({
@@ -97,18 +100,61 @@ export default function ReviewsScreen() {
 			return;
 		}
 
+		// Check for profanity in the review
+		const hasProfanity = containsProfanity(newComment);
+
+		// Clear any previous profanity error
+		setProfanityError(null);
 		setIsSubmitting(true);
 
 		// Simulate network delay
 		setTimeout(() => {
-			addReview(recipeId, newRating, newComment);
+			// Add the review with appropriate status based on profanity check
+			addReview(
+				recipeId,
+				newRating,
+				newComment,
+				hasProfanity ? "pending_review" : "approved",
+			);
+
 			setNewRating(5);
 			setNewComment("");
 			setIsSubmitting(false);
 
-			// Navigate back to recipe detail
-			router.back();
+			// Show alert if the review contains profanity
+			if (hasProfanity) {
+				Alert.alert(
+					"Review Submitted for Moderation",
+					"Your review contains content that needs to be reviewed by our moderators. It will be visible once approved.",
+					[{ text: "OK", onPress: () => router.back() }],
+				);
+			} else {
+				// Navigate back to recipe detail
+				router.back();
+			}
 		}, 500);
+	};
+
+	const handleReportReview = (reviewId: string) => {
+		Alert.alert(
+			"Report Review",
+			"Are you sure you want to report this review as inappropriate?",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Report",
+					style: "destructive",
+					onPress: () => {
+						// For now, just show a confirmation alert
+						Alert.alert(
+							"Review Reported",
+							"Thank you for your report. Our moderators will review this content.",
+							[{ text: "OK" }],
+						);
+					},
+				},
+			],
+		);
 	};
 
 	// Format date to a more user-friendly format
@@ -198,7 +244,18 @@ export default function ReviewsScreen() {
 	};
 
 	const renderReviewItem = ({ item }: { item: Review }) => (
-		<View style={[styles.reviewItem, { backgroundColor: reviewItemBgColor }]}>
+		<View
+			style={[
+				styles.reviewItem,
+				{
+					backgroundColor: reviewItemBgColor,
+					// Add a different border for pending reviews
+					borderWidth: item.status === "pending_review" ? 1 : 0,
+					borderColor:
+						item.status === "pending_review" ? "#FFD700" : "transparent",
+				},
+			]}
+		>
 			<View style={styles.reviewHeader}>
 				<ThemedText style={styles.reviewerName}>{item.userName}</ThemedText>
 				<Text style={[styles.reviewDate, { color: subtextColor }]}>
@@ -207,6 +264,30 @@ export default function ReviewsScreen() {
 			</View>
 			<View style={styles.reviewRating}>{renderStars(item.rating)}</View>
 			<ThemedText style={styles.reviewComment}>{item.comment}</ThemedText>
+
+			{/* Pending review badge */}
+			{item.status === "pending_review" && (
+				<View style={styles.pendingBadge}>
+					<Text style={styles.pendingText}>Pending Review</Text>
+				</View>
+			)}
+
+			{/* Report button */}
+			{item.status !== "pending_review" && item.userName !== "You" && (
+				<TouchableOpacity
+					style={styles.reportButton}
+					onPress={() => handleReportReview(item.id)}
+				>
+					<IconSymbol
+						name="flag.fill"
+						size={14}
+						color={isDark ? "#9BA1A6" : "#666"}
+					/>
+					<Text style={[styles.reportText, { color: subtextColor }]}>
+						Report
+					</Text>
+				</TouchableOpacity>
+			)}
 		</View>
 	);
 
@@ -293,18 +374,25 @@ export default function ReviewsScreen() {
 									styles.textArea,
 									{
 										backgroundColor: inputBackgroundColor,
-										borderColor: inputBorderColor,
+										borderColor: profanityError ? "#FF6B6B" : inputBorderColor,
 										color: textColor,
 									},
 								]}
 								value={newComment}
-								onChangeText={setNewComment}
+								onChangeText={(text) => {
+									setNewComment(text);
+									// Clear profanity error when user starts typing again
+									if (profanityError) setProfanityError(null);
+								}}
 								placeholder="What did you think about this recipe?"
 								placeholderTextColor={placeholderColor}
 								multiline
 								numberOfLines={4}
 								textAlignVertical="top"
 							/>
+							{profanityError && (
+								<Text style={styles.profanityErrorText}>{profanityError}</Text>
+							)}
 						</View>
 
 						<TouchableOpacity
@@ -520,5 +608,33 @@ const styles = StyleSheet.create({
 		color: "#fff",
 		fontWeight: "bold",
 		fontSize: 16,
+	},
+	profanityErrorText: {
+		color: "#FF6B6B",
+		marginTop: 8,
+		fontSize: 14,
+	},
+	pendingBadge: {
+		backgroundColor: "#FFD70066", // Semi-transparent gold
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 4,
+		alignSelf: "flex-start",
+		marginTop: 8,
+	},
+	pendingText: {
+		color: "#B8860B", // Dark goldenrod
+		fontSize: 12,
+		fontWeight: "600",
+	},
+	reportButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginTop: 12,
+		alignSelf: "flex-end",
+	},
+	reportText: {
+		fontSize: 12,
+		marginLeft: 4,
 	},
 });

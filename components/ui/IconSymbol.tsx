@@ -16,8 +16,12 @@ const MAPPING = {
 	"chevron.left.forwardslash.chevron.right": "code",
 	"chevron.right": "chevron-right",
 	"arrow.down.circle.fill": "download",
+	"arrow.right": "arrow-right-alt",
 	"chevron.up": "expand-less",
 	"chevron.down": "expand-more",
+	shuffle: "shuffle",
+	clock: "access-time",
+	sparkles: "lightbulb",
 	// Added mappings for Ionicons
 	"star.fill": "star",
 	star: "star-outline",

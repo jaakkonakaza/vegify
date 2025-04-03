@@ -177,7 +177,12 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 		return preferences.favoriteRecipes.includes(recipeId);
 	};
 
-	const addReview = (recipeId: string, rating: number, comment: string) => {
+	const addReview = (
+		recipeId: string,
+		rating: number,
+		comment: string,
+		status: "approved" | "pending_review" = "approved",
+	) => {
 		const newReview: Review = {
 			id: `review-${Date.now()}`,
 			userId: "current-user",
@@ -185,6 +190,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 			rating,
 			comment,
 			date: new Date().toISOString().split("T")[0],
+			status,
 		};
 
 		setReviews((prev) => {
