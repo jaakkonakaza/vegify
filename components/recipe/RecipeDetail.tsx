@@ -32,14 +32,8 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({ recipe }: RecipeDetailProps) {
 	const router = useRouter();
-	const {
-		toggleFavorite,
-		isFavorite,
-		getRecipeReviews,
-		preferences,
-		toggleNutritionalInfo,
-	} = useUserPreferences();
-	const favorite = isFavorite(recipe.id);
+	const { getRecipeReviews, preferences, toggleNutritionalInfo } =
+		useUserPreferences();
 	const [servingSize, setServingSize] = useState(recipe.servingSize);
 	const [isEditing, setIsEditing] = useState(false);
 	const colorScheme = useColorScheme() ?? "light";
@@ -202,29 +196,6 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 		};
 	});
 
-	const shareRecipe = async () => {
-		try {
-			const result = await Share.share({
-				message: `Check out this recipe: ${recipe.name}`,
-				title: recipe.name,
-			});
-
-			if (result.action === Share.sharedAction) {
-				if (result.activityType) {
-					// shared with activity type of result.activityType
-				} else {
-					// shared
-				}
-			} else if (result.action === Share.dismissedAction) {
-				// dismissed
-			}
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error occurred";
-			Alert.alert("Error sharing", errorMessage);
-		}
-	};
-
 	const shareIngredients = async () => {
 		try {
 			// Create a formatted list of ingredients
@@ -254,37 +225,12 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error occurred";
-			Alert.alert("Error sharing ingredients", errorMessage);
+			Alert.alert("Error sharing", errorMessage);
 		}
 	};
 
 	const headerContent = (
 		<View style={styles.headerControls}>
-			<TouchableOpacity
-				style={[styles.backButton, { backgroundColor: buttonBgColor }]}
-				onPress={() => router.back()}
-				activeOpacity={0.7}
-			>
-				<IconSymbol name="arrow.left" size={24} color={iconColor} />
-			</TouchableOpacity>
-			<TouchableOpacity
-				style={[styles.favoriteButton, { backgroundColor: buttonBgColor }]}
-				onPress={() => toggleFavorite(recipe.id)}
-				activeOpacity={0.7}
-			>
-				<IconSymbol
-					name={favorite ? "heart.fill" : "heart"}
-					size={24}
-					color={favorite ? "#FF6B6B" : iconColor}
-				/>
-			</TouchableOpacity>
-			<TouchableOpacity
-				style={[styles.shareButton, { backgroundColor: buttonBgColor }]}
-				onPress={shareRecipe}
-				activeOpacity={0.7}
-			>
-				<IconSymbol name="square.and.arrow.up" size={24} color={iconColor} />
-			</TouchableOpacity>
 			<View style={[styles.timeContainer, { backgroundColor: buttonBgColor }]}>
 				<IconSymbol name="timer" size={16} color={subtextColor} />
 				<Text style={[styles.timeText, { color: subtextColor }]}>
@@ -513,51 +459,6 @@ const styles = StyleSheet.create({
 	headerControls: {
 		flex: 1,
 		position: "relative",
-	},
-	backButton: {
-		position: "absolute",
-		top: 40,
-		left: 20,
-		borderRadius: 20,
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 3,
-	},
-	favoriteButton: {
-		position: "absolute",
-		top: 40,
-		right: 20,
-		borderRadius: 20,
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 3,
-	},
-	shareButton: {
-		position: "absolute",
-		top: 40,
-		right: 70,
-		borderRadius: 20,
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 3,
 	},
 	timeContainer: {
 		position: "absolute",
